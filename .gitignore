@@ -1,0 +1,11 @@
+# models
+models/
+
+# preprocessors
+preprocessors/
+
+# venv
+venv/
+
+# datasets
+*.csv

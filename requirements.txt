@@ -1,0 +1,15 @@
+pandas==2.3.3
+numpy==1.26.4
+matplotlib==3.10.7
+seaborn==0.13.2
+
+torch==2.9.0
+scikit-learn==1.7.2
+gensim==4.3.3
+sentence-transformers==5.1.1
+category_encoders==2.8.1
+nltk==3.9.2
+
+joblib==1.5.2
+tqdm==4.67.1
+pydantic==2.12.3

@@ -1,0 +1,79 @@
+# General Settings
+general:
+  random_seed: 42
+
+# Directory Paths
+paths:
+  data_filepath: "data/Train_rev1.csv"
+  models_dir: "trained_models/"
+  preprocessors_dir: "fitted_preprocessors/"
+  tfidf_features_dir: "tfidf_features/"
+  embeddings_dir: "embeddings/"
+  reports_dir: "reports/"
+  plots_dir: "reports/figures/"
+
+# Data Configuration
+data:
+  # Column names
+  columns:
+    title: "Title"
+    description: "FullDescription"
+    target: "SalaryNormalized"
+    categorical:
+      - "LocationNormalized"
+      - "ContractType"
+      - "Category"
+    high_cardinality:
+      - "Company"
+      - "LocationNormalized"
+      - "SourceName"
+  
+  # Train/test split
+  split:
+    test_size: 0.2
+    valid_size: 0.5  # proportion of validation in test split
+
+# Training Configuration
+training:
+  num_workers: 0
+  batch_size: 64
+  epochs: 30
+  learning_rate: 0.001
+  optimizer: "adam"  # Options: 'adam', 'sgd'
+  loss_function: "mse"  # Options: 'mse', 'mae'
+  
+  # Scheduler settings
+  scheduler:
+    patience: 0
+    factor: 0.5
+  
+  # Early stopping
+  early_stopping:
+    patience: 2
+
+# Model Architecture
+model:
+  # Embedding settings
+  embeddings:
+    max_seq_length: 320
+    embedding_dim: 300
+    w2v_embedding_dim: 256
+  
+  # Network architecture
+  architecture:
+    dropout_rate: 0.3
+    cat_hidden_size: 128
+    reg_hidden_size: 256
+    emb_hidden_size: 256
+    recurrent_hidden_size: 128
+    num_filters: 64
+    num_residual_blocks: 2  # 1, 2 or 3
+  
+  # Loss configuration
+  loss:
+    delta: 0.001
+
+# Pretrained Models
+pretrained:
+  sentence_transformer: "all-MiniLM-L12-v2"
+  word_embeddings: "fasttext"

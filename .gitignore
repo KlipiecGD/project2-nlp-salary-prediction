@@ -1,11 +1,33 @@
-# models
-models/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.log
 
-# preprocessors
-preprocessors/
+# Virtual environments
+venv*/
+.env/
 
-# venv
-venv/
+# Data & models
+data/
+fitted_preprocessors/
+trained_models/
+embeddings/
+tfidf_features/
+*.pt
+*.pth
 
-# datasets
-*.csv
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+
+# Other
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+.ruff_cache/

@@ -3,36 +3,36 @@ import logging
 import joblib
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from typing import Dict, Any
-from config.config import PREPROCESSORS_DIR
+from typing import Any, Optional
 
 
 def preprocess_target(
     y_train: pd.Series,
     y_valid: pd.Series,
     y_test: pd.Series,
-    log: bool = False,
-    save_artifacts: bool = True,
-    preprocessor_dir: str = PREPROCESSORS_DIR,
-    artifact_prefix: str = "",
-    logger: logging.Logger = None,
-) -> Dict[str, Any]:
+    log: Optional[bool] = False,
+    save_artifacts: Optional[bool] = True,
+    preprocessor_dir: Optional[str] = "fitted_preprocessors",
+    artifact_prefix: Optional[str] = "",
+    logger: Optional[logging.Logger] = None,
+) -> dict[str, Any]:
     """
     Preprocess target values for salary prediction.
 
     Args:
-        y_train: Training target values
-        y_valid: Validation target values
-        y_test: Test target values
-        log: If True, indicates that y is already log-transformed,
-             so skips StandardScaler and artifact saving
-        save_artifacts: Whether to save the target scaler
-        preprocessor_dir: Directory to save preprocessor artifacts
-        artifact_prefix: Prefix for saved artifact filenames
-        logger: Optional logger for logging information
+        y_train: (pd.Series), Training target values.
+        y_valid: (pd.Series), Validation target values.
+        y_test: (pd.Series), Test target values.
+        log: Optional[bool], If True, indicates that y is already log-transformed,
+            so skips StandardScaler and artifact saving. Defaults to False.
+        save_artifacts: Optional[bool], Whether to save the target scaler. Defaults to True.
+        preprocessor_dir: Optional[str], Directory to save preprocessor artifacts.
+            Defaults to "fitted_preprocessors".
+        artifact_prefix: Optional[str], Prefix for saved artifact filenames. Defaults to "".
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        dict containing:
+        dict, dict containing:
             - y_train_scaled: Scaled training targets
             - y_valid_scaled: Scaled validation targets
             - y_test_scaled: Scaled test targets
@@ -60,11 +60,13 @@ def preprocess_target(
     if save_artifacts and not log:
         # Create directory if it doesn't exist
         os.makedirs(preprocessor_dir, exist_ok=True)
-        
-        scaler_path = os.path.join(preprocessor_dir, f"{artifact_prefix}target_scaler.pkl")
+
+        scaler_path = os.path.join(
+            preprocessor_dir, f"{artifact_prefix}target_scaler.pkl"
+        )
         joblib.dump(target_scaler, scaler_path)
-        
+
         if logger:
             logger.info(f"Target scaler saved to: {scaler_path}")
-    
+
     return (y_train_scaled, y_valid_scaled, y_test_scaled, target_scaler)

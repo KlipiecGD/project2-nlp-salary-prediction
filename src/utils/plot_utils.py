@@ -1,21 +1,19 @@
 import torch.nn as nn
 from pathlib import Path
-from typing import List, Optional
+from typing import  Optional
 import matplotlib.pyplot as plt
-from typing import Dict
 import logging
 import numpy as np
-from config.config import LOSS_FUNCTION
 
 
 def plot_losses_from_lists(
-    train_losses: List[float],
-    valid_losses: List[float],
-    train_real_losses: Optional[List[float]] = None,
-    valid_real_losses: Optional[List[float]] = None,
+    train_losses: list[float],
+    valid_losses: list[float],
+    train_real_losses: Optional[list[float]] = None,
+    valid_real_losses: Optional[list[float]] = None,
     save_path: Optional[str] = None,
-    logger: Optional[logging.Logger] = None
-):
+    logger: Optional[logging.Logger] = None,
+) -> None:
     """
     Plot training and validation losses.
 
@@ -23,15 +21,15 @@ def plot_losses_from_lists(
     losses side-by-side, depending on whether the real-scale losses are provided.
 
     Args:
-        train_losses: A list of scaled training loss values, one for each epoch.
-        valid_losses: A list of scaled validation loss values, one for each epoch.
-        train_real_losses: An optional list of real-scale training loss values.
+        train_losses: list[float], A list of scaled training loss values, one for each epoch.
+        valid_losses: list[float], A list of scaled validation loss values, one for each epoch.
+        train_real_losses: Optional[list[float]], An optional list of real-scale training loss values.
                            Defaults to None.
-        valid_real_losses: An optional list of real-scale validation loss values.
+        valid_real_losses: Optional[list[float]], An optional list of real-scale validation loss values.
                            Defaults to None.
-        save_path: Optional path to save the plot image. If None, the plot is shown
+        save_path: Optional[str], path to save the plot image. If None, the plot is shown
                    but not saved.
-        logger: Optional logger instance for output.
+        logger: Optional[logging.Logger], logger instance for output.
     """
     if train_real_losses is None or valid_real_losses is None:
         # Only plot scaled losses
@@ -86,28 +84,28 @@ def plot_losses_from_lists(
 
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
         if logger:
             logger.info(f"Loss plot saved to {save_path}.")
     plt.show()
 
 
 def plot_losses_curves(
-    history_dict: Dict,
-    loss_fn=LOSS_FUNCTION,
+    history_dict: dict,
+    loss_fn: str = "mse",
     save_path: Optional[str] = None,
-    logger: Optional[logging.Logger] = None
-):
+    logger: Optional[logging.Logger] = None,
+) -> None:
     """
     Plot training and validation losses from a history dictionary.
     Left plot shows scaled losses, right plot shows real-scale losses.
 
     Args:
-        history_dict: Dictionary containing loss histories
-        loss_fn: 'mse' or 'mae' - determines which losses to plot
-        save_path: Optional path to save the plot image. If None, the plot is shown
+        history_dict: dict, Dictionary containing loss histories
+        loss_fn: str, 'mse' or 'mae' - determines which losses to plot
+        save_path: Optional[str], path to save the plot image. If None, the plot is shown
                    but not saved.
-        logger: Optional logger instance for output.
+        logger: Optional[logging.Logger], logger instance for output.
     """
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -202,29 +200,29 @@ def plot_losses_curves(
 
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
         if logger:
             logger.info(f"Loss curves plot saved to {save_path}.")
     plt.show()
 
 
 def plot_top_models_comparison(
-    results_dict: Dict,
+    results_dict: dict,
     top_n: int = 10,
     figsize: tuple = (16, 6),
     save_path: Optional[str] = None,
     logger: Optional[logging.Logger] = None,
-):
+) -> None:
     """
     Creates side-by-side bar plots comparing models by Test MSE (scaled) and Test RMSE (real).
 
     Args:
-        results_dict: Dictionary with model names as keys and metrics as values
-        top_n: Number of top models to display (default: 10)
-        figsize: Figure size as (width, height) tuple
-        save_path: Optional path to save the plot image. If None, the plot is shown
+        results_dict: dict, Dictionary with model names as keys and metrics as values
+        top_n: int, Number of top models to display (default: 10)
+        figsize: tuple, Figure size as (width, height) tuple
+        save_path: Optional[str], path to save the plot image. If None, the plot is shown
                    but not saved.
-        logger: Optional logger instance for output (default: None, no output)
+        logger: Optional[logging.Logger], logger instance for output (default: None, no output)
     """
     # Extract data from results dictionary
     model_names = list(results_dict.keys())
@@ -298,7 +296,7 @@ def plot_top_models_comparison(
 
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
         if logger:
             logger.info(f"Top models comparison plot saved to {save_path}.")
     plt.show()
@@ -341,37 +339,38 @@ def plot_top_models_comparison(
 
         logger.info(f"{'=' * 70}\n")
 
+
 def plot_single_model_report(
     model: nn.Module,
-    history: Dict,
+    history: dict,
     elapsed_time: float,
-    test_metrics: Dict,
+    test_metrics: dict,
     model_name: str,
     loss_fn: str = "mse",
     save_dir: Optional[str] = None,
     logger: Optional[logging.Logger] = None,
-):
+) -> None:
     """
     Create comprehensive visualization report for a single model.
     Generates 4 plots: RMSE comparison, parameters, training time, and overfitting analysis.
-    
+
     Args:
-        model: Trained PyTorch model
-        history: History dictionary from train_model function
-        elapsed_time: Training time in seconds from train_model function
-        test_metrics: Test metrics dictionary from evaluate_model function
-        model_name: Name/identifier for the model
-        loss_fn: Loss function used ('mse' or 'mae')
-        save_dir: Directory to save plots. If None, plots are only displayed.
-        logger: Optional logger instance for output
+        model: nn.Module, Trained PyTorch model
+        history: dict, History dictionary from train_model function
+        elapsed_time: float, Training time in seconds from train_model function
+        test_metrics: dict, Test metrics dictionary from evaluate_model function
+        model_name: str, Name/identifier for the model
+        loss_fn: str, Loss function used ('mse' or 'mae')
+        save_dir: Optional[str], Directory to save plots. If None, plots are only displayed.
+        logger: Optional[logging.Logger], logger instance for output
     """
-    
+
     # Count trainable parameters
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    
+
     # Get number of epochs trained
     epochs_trained = len(history["train_loss_scaled"])
-    
+
     # Find best validation epoch
     if loss_fn == "mse":
         best_valid_idx = np.argmin(history["valid_rmse"])
@@ -385,115 +384,199 @@ def plot_single_model_report(
         valid_rmse = history["valid_mae_real"][best_valid_idx]
         test_rmse = test_metrics["Test MAE (real)"]
         metric_name = "MAE"
-    
+
     best_epoch = best_valid_idx + 1
     training_time_min = elapsed_time / 60
-    
+
     # Create save directory if specified
     if save_dir:
         save_path = Path(save_dir)
         save_path.mkdir(parents=True, exist_ok=True)
         if logger:
             logger.info(f"Saving plots to: {save_path}")
-    
+
     # Plot 1: Train/Valid/Test RMSE Comparison
     fig, ax = plt.subplots(figsize=(10, 6))
-    
+
     x = np.array([0])
     width = 0.25
-    
-    bars1 = ax.bar(x - width, [train_rmse], width, label=f'Train {metric_name}', alpha=0.8, color='skyblue')
-    bars2 = ax.bar(x, [valid_rmse], width, label=f'Valid {metric_name}', alpha=0.8, color='lightcoral')
-    bars3 = ax.bar(x + width, [test_rmse], width, label=f'Test {metric_name}', alpha=0.8, color='lightgreen')
-    
-    ax.set_xlabel('Model', fontsize=12, fontweight='bold')
-    ax.set_ylabel(metric_name, fontsize=12, fontweight='bold')
-    ax.set_title(f'{model_name}: Train/Valid/Test {metric_name} Comparison', 
-                 fontsize=14, fontweight='bold', pad=20)
+
+    bars1 = ax.bar(
+        x - width,
+        [train_rmse],
+        width,
+        label=f"Train {metric_name}",
+        alpha=0.8,
+        color="skyblue",
+    )
+    bars2 = ax.bar(
+        x,
+        [valid_rmse],
+        width,
+        label=f"Valid {metric_name}",
+        alpha=0.8,
+        color="lightcoral",
+    )
+    bars3 = ax.bar(
+        x + width,
+        [test_rmse],
+        width,
+        label=f"Test {metric_name}",
+        alpha=0.8,
+        color="lightgreen",
+    )
+
+    ax.set_xlabel("Model", fontsize=12, fontweight="bold")
+    ax.set_ylabel(metric_name, fontsize=12, fontweight="bold")
+    ax.set_title(
+        f"{model_name}: Train/Valid/Test {metric_name} Comparison",
+        fontsize=14,
+        fontweight="bold",
+        pad=20,
+    )
     ax.set_xticks([0])
     ax.set_xticklabels([model_name])
     ax.legend(fontsize=10)
-    ax.grid(axis='y', alpha=0.3)
-    
+    ax.grid(axis="y", alpha=0.3)
+
     # Add value labels on bars
-    ax.text(x - width, train_rmse, f'{train_rmse:.1f}', ha='center', va='bottom', fontsize=10, fontweight='bold')
-    ax.text(x, valid_rmse, f'{valid_rmse:.1f}', ha='center', va='bottom', fontsize=10, fontweight='bold')
-    ax.text(x + width, test_rmse, f'{test_rmse:.1f}', ha='center', va='bottom', fontsize=10, fontweight='bold')
-    
+    ax.text(
+        x - width,
+        train_rmse,
+        f"{train_rmse:.1f}",
+        ha="center",
+        va="bottom",
+        fontsize=10,
+        fontweight="bold",
+    )
+    ax.text(
+        x,
+        valid_rmse,
+        f"{valid_rmse:.1f}",
+        ha="center",
+        va="bottom",
+        fontsize=10,
+        fontweight="bold",
+    )
+    ax.text(
+        x + width,
+        test_rmse,
+        f"{test_rmse:.1f}",
+        ha="center",
+        va="bottom",
+        fontsize=10,
+        fontweight="bold",
+    )
+
     plt.tight_layout()
     if save_dir:
-        plt.savefig(save_path / f"{model_name}_rmse_comparison.png", dpi=300, bbox_inches='tight')
+        plt.savefig(
+            save_path / f"{model_name}_rmse_comparison.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
         if logger:
             logger.info(f"Saved: {model_name}_rmse_comparison.png")
     plt.show()
-    
+
     # Plot 2: Model Complexity (Parameters)
     fig, ax = plt.subplots(figsize=(10, 6))
-    
-    bar = ax.barh([model_name], [n_params], color='steelblue', alpha=0.7)
-    ax.set_xlabel('Number of Parameters', fontsize=11, fontweight='bold')
-    ax.set_title(f'{model_name}: Model Complexity', fontsize=12, fontweight='bold', pad=15)
-    ax.grid(axis='x', alpha=0.3)
-    
+
+    bar = ax.barh([model_name], [n_params], color="steelblue", alpha=0.7)
+    ax.set_xlabel("Number of Parameters", fontsize=11, fontweight="bold")
+    ax.set_title(
+        f"{model_name}: Model Complexity", fontsize=12, fontweight="bold", pad=15
+    )
+    ax.grid(axis="x", alpha=0.3)
+
     # Add value label
-    ax.text(n_params, 0, f' {n_params:,}', 
-            va='center', ha='left', fontsize=10, fontweight='bold')
-    
+    ax.text(
+        n_params,
+        0,
+        f" {n_params:,}",
+        va="center",
+        ha="left",
+        fontsize=10,
+        fontweight="bold",
+    )
+
     plt.tight_layout()
     if save_dir:
-        plt.savefig(save_path / f"{model_name}_parameters.png", dpi=300, bbox_inches='tight')
+        plt.savefig(
+            save_path / f"{model_name}_parameters.png", dpi=300, bbox_inches="tight"
+        )
         if logger:
             logger.info(f"Saved: {model_name}_parameters.png")
     plt.show()
-    
+
     # Plot 3: Training Time
     fig, ax = plt.subplots(figsize=(10, 6))
-    
-    bar = ax.barh([model_name], [training_time_min], color='coral', alpha=0.7)
-    ax.set_xlabel('Training Time (minutes)', fontsize=11, fontweight='bold')
-    ax.set_title(f'{model_name}: Training Time', fontsize=12, fontweight='bold', pad=15)
-    ax.grid(axis='x', alpha=0.3)
-    
+
+    bar = ax.barh([model_name], [training_time_min], color="coral", alpha=0.7)
+    ax.set_xlabel("Training Time (minutes)", fontsize=11, fontweight="bold")
+    ax.set_title(f"{model_name}: Training Time", fontsize=12, fontweight="bold", pad=15)
+    ax.grid(axis="x", alpha=0.3)
+
     # Add value label
-    ax.text(training_time_min, 0, f' {training_time_min:.2f} min', 
-            va='center', ha='left', fontsize=10, fontweight='bold')
-    
+    ax.text(
+        training_time_min,
+        0,
+        f" {training_time_min:.2f} min",
+        va="center",
+        ha="left",
+        fontsize=10,
+        fontweight="bold",
+    )
+
     plt.tight_layout()
     if save_dir:
-        plt.savefig(save_path / f"{model_name}_training_time.png", dpi=300, bbox_inches='tight')
+        plt.savefig(
+            save_path / f"{model_name}_training_time.png", dpi=300, bbox_inches="tight"
+        )
         if logger:
             logger.info(f"Saved: {model_name}_training_time.png")
     plt.show()
-    
+
     # Plot 4: Overfitting Analysis
     fig, ax = plt.subplots(figsize=(10, 6))
-    
+
     overfit_gap = valid_rmse - train_rmse
-    bar_color = 'coral' if overfit_gap > 0 else 'lightgreen'
-    
+    bar_color = "coral" if overfit_gap > 0 else "lightgreen"
+
     bar = ax.barh([model_name], [overfit_gap], color=bar_color, alpha=0.7)
-    ax.set_xlabel(f'Overfitting Gap (Valid {metric_name} - Train {metric_name})', 
-                  fontsize=11, fontweight='bold')
-    ax.set_title(f'{model_name}: Overfitting Analysis', fontsize=12, fontweight='bold', pad=15)
-    ax.axvline(x=0, color='red', linestyle='--', linewidth=2, alpha=0.5)
-    ax.grid(axis='x', alpha=0.3)
-    
+    ax.set_xlabel(
+        f"Overfitting Gap (Valid {metric_name} - Train {metric_name})",
+        fontsize=11,
+        fontweight="bold",
+    )
+    ax.set_title(
+        f"{model_name}: Overfitting Analysis", fontsize=12, fontweight="bold", pad=15
+    )
+    ax.axvline(x=0, color="red", linestyle="--", linewidth=2, alpha=0.5)
+    ax.grid(axis="x", alpha=0.3)
+
     # Add value label
-    text_ha = 'left' if overfit_gap > 0 else 'right'
-    ax.text(overfit_gap, 0, f' {overfit_gap:.2f}' if overfit_gap > 0 else f'{overfit_gap:.2f} ', 
-            va='center', ha=text_ha, fontsize=10, fontweight='bold')
-    
+    text_ha = "left" if overfit_gap > 0 else "right"
+    ax.text(
+        overfit_gap,
+        0,
+        f" {overfit_gap:.2f}" if overfit_gap > 0 else f"{overfit_gap:.2f} ",
+        va="center",
+        ha=text_ha,
+        fontsize=10,
+        fontweight="bold",
+    )
+
     plt.tight_layout()
     if save_dir:
-        plt.savefig(save_path / f"{model_name}_overfitting.png", dpi=300, bbox_inches='tight')
+        plt.savefig(
+            save_path / f"{model_name}_overfitting.png", dpi=300, bbox_inches="tight"
+        )
         if logger:
             logger.info(f"Saved: {model_name}_overfitting.png")
     plt.show()
-    
-   
-    # ============================================================
+
     # Summary Statistics
-    # ============================================================
     if logger:
         logger.info(f"\n{'=' * 70}")
         logger.info(f"MODEL REPORT: {model_name}")

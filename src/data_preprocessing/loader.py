@@ -1,18 +1,19 @@
 import logging
 import pandas as pd
-from config.config import FILEPATH
 
 
-def load_data(file_path: str = FILEPATH, logger: logging.Logger = None) -> pd.DataFrame:
+def load_data(
+    file_path: str = "data/Train_rev1.csv", logger: logging.Logger = None
+) -> pd.DataFrame:
     """
     Loads data from a CSV and handles missing values in 'Title'.
 
     Args:
-        file_path: Path to the raw CSV data file.
-        logger: Optional logger for logging information.
+        file_path: str, Path to the raw CSV data file. Defaults to "data/Train_rev1.csv".
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        df (pd.DataFrame): Loaded dataset with imputed Title values.
+        pd.DataFrame: Loaded dataset with imputed Title values.
     """
     # Load data from the specified path
     df = pd.read_csv(file_path)

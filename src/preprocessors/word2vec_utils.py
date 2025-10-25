@@ -1,13 +1,13 @@
 import logging
-from typing import List, Optional, Dict
+from typing import Optional
 from gensim.models import Word2Vec
 import numpy as np
 from nltk.tokenize import word_tokenize
 
 
 def train_word2vec_model(
-    texts: List[str],
-    vector_size: int = 128,
+    texts: list[str],
+    vector_size: int = 256,
     window: int = 5,
     min_count: int = 20,
     sg: int = 1,  # 1=Skip-gram, 0=CBOW
@@ -18,13 +18,16 @@ def train_word2vec_model(
     Train Word2Vec model on given corpus.
 
     Args:
-        texts: List of text strings
-        vector_size: Dimension of word embeddings
-        window: Context window size
-        min_count: Minimum word frequency
-        sg: Algorithm (1=Skip-gram, 0=CBOW)
-        epochs: Training epochs
-        logger: Optional logger for logging information
+        texts: list[str], List of text documents.
+        vector_size: int, Dimensionality of word vectors, default is 256.
+        window: int, Maximum distance between current and predicted word, default is 5.
+        min_count: int, Ignores words with total frequency lower than this, default is 20.
+        sg: int, Training algorithm: 1 for skip-gram; 0 for CBOW, default is 1.
+        epochs: int, Number of iterations (epochs) over the corpus, default is 10.
+        logger: Optional[logging.Logger], Optional logger for logging information.
+
+    Returns:
+        Word2Vec, Trained Word2Vec model.
     """
     # Tokenize texts
     tokenized = [word_tokenize(text.lower()) for text in texts]
@@ -55,12 +58,12 @@ def encode_text_with_w2v(
     Convert text to a fixed-size vector using Word2Vec.
 
     Args:
-        text: Input text
-        w2v_model: Trained Word2Vec model
-        method: Aggregation method ('mean', 'max', 'sum', 'mean+max')
-
+        text: str, Input text document.
+        w2v_model: Word2Vec, Trained Word2Vec model.
+        method: str, Aggregation method: 'mean', 'max', 'sum', or 'mean+max', default is 'mean'.
+        logger: Optional[logging.Logger], Optional logger for logging information.
     Returns:
-        Fixed-size vector representing the text
+        np.ndarray, Fixed-size vector representation of the text.
     """
     tokens = word_tokenize(text.lower())
 
@@ -89,17 +92,17 @@ def encode_text_with_w2v(
 
 
 def create_embedding_matrix_w2v(
-    vocab: Dict[str, int], w2v_model: Word2Vec, logger: Optional[logging.Logger] = None
+    vocab: dict[str, int], w2v_model: Word2Vec, logger: Optional[logging.Logger] = None
 ) -> np.ndarray:
     """
     Create embedding matrix from Word2Vec for vocabulary.
     Words not in Word2Vec get small random values.
     Args:
-        vocab: Vocabulary dictionary mapping tokens to indices
-        w2v_model: Trained Word2Vec model
-        logger: Optional logger for logging information
+        vocab: dict[str, int], Vocabulary mapping tokens to indices.
+        w2v_model: Word2Vec, Trained Word2Vec model.
+        logger: Optional[logging.Logger], Optional logger for logging information.
     Returns:
-        Embedding matrix as numpy array
+        np.ndarray, Embedding matrix.
     """
 
     vocab_size = len(vocab)
@@ -127,13 +130,13 @@ def create_embedding_matrix_w2v(
 
 def build_vocab_from_w2v(
     w2v_model: Word2Vec, logger: Optional[logging.Logger] = None
-) -> Dict[str, int]:
+) -> dict[str, int]:
     """Build vocabulary from Word2Vec model.
     Args:
-        w2v_model: Trained Word2Vec model
-        logger: Optional logger for logging information
+        w2v_model: Word2Vec, Trained Word2Vec model.
+        logger: Optional[logging.Logger], Optional logger for logging information.
     Returns:
-        Vocabulary dictionary mapping tokens to indices
+        dict[str, int], Vocabulary mapping tokens to indices.
     """
     vocab = {"<PAD>": 0, "<UNK>": 1}
     for idx, word in enumerate(w2v_model.wv.index_to_key, start=2):

@@ -2,14 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from config.config import (
-    EMBEDDING_DIM,
-    CAT_HIDDEN_SIZE,
-    EMB_HIDDEN_SIZE,
-    DROPOUT_RATE,
-    NUM_FILTERS,
-    NUM_RESIDUAL_BLOCKS,
-)
 from src.models.residual_block import ResidualBlock
 
 
@@ -17,27 +9,29 @@ class UnfrozenResidualNN(nn.Module):
     """
     Residual Neural Network with unfrozen embeddings and categorical features.
     Includes a flexible number of residual blocks for regression tasks.
-
-    Args:
-        vocab_size: Size of the vocabulary for the embedding layer.
-        categorical_dim: Number of categorical features.
-        embedding_size: Dimension of the word embeddings.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        emb_hidden_size: Number of neurons in the hidden layers for regression.
-        dropout: Dropout rate for regularization.
-        num_residual_blocks: Number of residual blocks to include (1, 2, or 3).
     """
 
     def __init__(
         self,
         vocab_size: int,
         categorical_dim: int,
-        embedding_size: int = EMBEDDING_DIM,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        emb_hidden_size: int = EMB_HIDDEN_SIZE,
-        dropout: float = DROPOUT_RATE,
-        num_residual_blocks: int = NUM_RESIDUAL_BLOCKS,
-    ):
+        embedding_size: int = 300,
+        cat_hidden_size: int = 128,
+        emb_hidden_size: int = 256,
+        dropout: float = 0.3,
+        num_residual_blocks: int = 2,
+    ) -> None:
+        """
+        Initializes the UnfrozenResidualNN model.
+        Args:
+            vocab_size: Size of the vocabulary for the embedding layer.
+            categorical_dim: Number of categorical features.
+            embedding_size: Dimension of the word embeddings. Defaults to 300.
+            cat_hidden_size: Number of neurons in the hidden layer for categorical features. Defaults to 128.
+            emb_hidden_size: Number of neurons in the hidden layers for regression. Defaults to 256.
+            dropout: Dropout rate for regularization. Defaults to 0.3.
+            num_residual_blocks: Number of residual blocks to use in regression (1, 2, or 3). Defaults to 2.
+        """
         super(UnfrozenResidualNN, self).__init__()
 
         # Trainable embedding layer
@@ -87,7 +81,14 @@ class UnfrozenResidualNN(nn.Module):
         else:
             raise ValueError("num_residual_blocks must be 1, 2, or 3")
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # 1. Embed text and average word vectors
         text_emb = self.embedding(text_seq)
         text_mask = (text_seq != 0).unsqueeze(-1).float()
@@ -122,25 +123,26 @@ class UnfrozenResidualNN(nn.Module):
 class UnfrozenCNN(nn.Module):
     """CNN model with unfrozen pre-trained embeddings and categorical features.
     Combines CNN-extracted text features with categorical features for regression tasks.
-
-    Args:
-        embedding_matrix: Pre-trained embedding matrix as a NumPy array.
-        categorical_dim: Dimension of the categorical feature input.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        emb_hidden_size: Number of neurons in the hidden layers for regression.
-        num_filters: Number of filters in the CNN layer.
-        dropout: Dropout probability for regularization.
     """
 
     def __init__(
         self,
         embedding_matrix: np.ndarray,
         categorical_dim: int,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        emb_hidden_size: int = EMB_HIDDEN_SIZE,
-        num_filters: int = NUM_FILTERS,
-        dropout: float = DROPOUT_RATE,
-    ):
+        cat_hidden_size: int = 128,
+        emb_hidden_size: int = 256,
+        num_filters: int = 64,
+        dropout: float = 0.3,
+    ) -> None:
+        """Initializes the UnfrozenCNN model.
+        Args:
+            embedding_matrix: Pre-trained embedding matrix as a NumPy array.
+            categorical_dim: Dimension of the categorical feature input.
+            cat_hidden_size: Number of neurons in the hidden layer for categorical features. Defaults to 128.
+            emb_hidden_size: Number of neurons in the hidden layers for regression. Defaults to 256.
+            num_filters: Number of filters in the CNN layer. Defaults to 64.
+            dropout: Dropout probability for regularization. Defaults to 0.3.
+        """
         super(UnfrozenCNN, self).__init__()
 
         vocab_size, embedding_dim = embedding_matrix.shape
@@ -177,7 +179,14 @@ class UnfrozenCNN(nn.Module):
             nn.Linear(emb_hidden_size // 2, 1),
         )
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # Embedding
         text_emb = self.embedding(text_seq)
         text_emb = self.embedding_dropout(text_emb)
@@ -203,25 +212,26 @@ class UnfrozenCNNWithResiduals(nn.Module):
     """Unfrozen CNN model with Residual Connections and categorical features.
     Combines CNN-extracted text features with categorical features for regression tasks,
     and includes residual blocks in the regressor for enhanced learning.
-
-    Args:
-        embedding_matrix: Pre-trained embedding matrix as a NumPy array.
-        categorical_dim: Dimension of the categorical feature input.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        emb_hidden_size: Number of neurons in the hidden layers for regression.
-        num_filters: Number of filters in the CNN layer.
-        dropout: Dropout probability for regularization.
     """
 
     def __init__(
         self,
         embedding_matrix: np.ndarray,
         categorical_dim: int,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        emb_hidden_size: int = EMB_HIDDEN_SIZE,
-        num_filters: int = NUM_FILTERS,
-        dropout: float = DROPOUT_RATE,
-    ):
+        cat_hidden_size: int = 128,
+        emb_hidden_size: int = 256,
+        num_filters: int = 64,
+        dropout: float = 0.3,
+    ) -> None:
+        """Initializes the UnfrozenCNNWithResiduals model.
+        Args:
+            embedding_matrix: Pre-trained embedding matrix as a NumPy array.
+            categorical_dim: Dimension of the categorical feature input.
+            cat_hidden_size: Number of neurons in the hidden layer for categorical features. Defaults to 128.
+            emb_hidden_size: Number of neurons in the hidden layers for regression. Defaults to 256.
+            num_filters: Number of filters in the CNN layer. Defaults to 64.
+            dropout: Dropout probability for regularization. Defaults to 0.3.
+        """
         super(UnfrozenCNNWithResiduals, self).__init__()
 
         vocab_size, embedding_dim = embedding_matrix.shape
@@ -256,7 +266,14 @@ class UnfrozenCNNWithResiduals(nn.Module):
 
         self.output_layer = nn.Linear(emb_hidden_size // 2, 1)
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # Embedding
         text_emb = self.embedding(text_seq)
         text_emb = self.embedding_dropout(text_emb)

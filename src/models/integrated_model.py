@@ -1,31 +1,31 @@
 import torch
 import torch.nn as nn
-from config.config import DROPOUT_RATE
 
 
 class IntegratedNN(nn.Module):
+    """
+    An integrated feed-forward neural network with configurable batch normalization placement.
+
+    This model is a multi-layered perceptron designed for regression, featuring
+    batch normalization and dropout for improved training stability and generalization.
+    The order of batch normalization and activation can be specified.
+    """
+
     def __init__(
         self,
         input_dim: int,
         hidden_size: int = 256,
-        dropout_prob: float = DROPOUT_RATE,
+        dropout_prob: float = 0.3,
         batch_norm_before_activation: bool = True,
-    ):
-        """
-        An integrated feed-forward neural network with configurable batch normalization placement.
-
-        This model is a multi-layered perceptron designed for regression, featuring
-        batch normalization and dropout for improved training stability and generalization.
-        The order of batch normalization and activation can be specified.
+    ) -> None:
+        """Initializes the IntegratedNN model.
 
         Args:
-            input_dim: The number of input features.
-            hidden_size: The number of neurons in the first hidden layer. Subsequent
-                         layers will have a decreasing number of neurons. Defaults to 256.
-            dropout_prob: The dropout probability applied after each activation.
-            batch_norm_before_activation: If True, batch normalization is applied before
-                                          the ReLU activation. If False, it is applied after.
-                                          Defaults to True.
+            input_dim: int, Dimension of the input features.
+            hidden_size: int, Number of neurons in the first hidden layer. Default is 256.
+            dropout_prob: float, Dropout probability for regularization. Default is 0.3.
+            batch_norm_before_activation: bool, If True, applies batch normalization before activation functions.
+                                        If False, applies it after. Default is True.
         """
         super(IntegratedNN, self).__init__()
         self.batch_norm_before_activation = batch_norm_before_activation
@@ -41,6 +41,12 @@ class IntegratedNN(nn.Module):
         self.fc4 = nn.Linear(hidden_size // 2 // 2, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            x: torch.Tensor, Input features tensor.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         if self.batch_norm_before_activation:
             x = self.fc1(x)
             x = self.bn1(x)

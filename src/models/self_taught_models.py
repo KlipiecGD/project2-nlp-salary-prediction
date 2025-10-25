@@ -1,16 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from config.config import (
-    DROPOUT_RATE,
-    CAT_HIDDEN_SIZE,
-    REG_HIDDEN_SIZE,
-    NUM_RESIDUAL_BLOCKS,
-    EMBEDDING_DIM,
-    NUM_FILTERS,
-    EMB_HIDDEN_SIZE,
-    RECURRENT_HIDDEN_SIZE,
-)
 from src.models.residual_block import ResidualBlock
 
 
@@ -20,14 +10,6 @@ class SelfTaughtNN(nn.Module):
 
     This model includes an embedding layer for text input, processes categorical features through
     a fully connected layer, and combines both to predict a continuous target variable.
-
-    Args:
-        vocab_size: Size of the vocabulary for the embedding layer.
-        embedding_size: Dimension of the word embeddings.
-        categorical_dim: Number of categorical features.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        reg_hidden_size: Number of neurons in the hidden layer for regression.
-        dropout: Dropout rate for regularization.
     """
 
     def __init__(
@@ -35,10 +17,21 @@ class SelfTaughtNN(nn.Module):
         vocab_size: int,
         embedding_size: int,
         categorical_dim: int,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        reg_hidden_size: int = REG_HIDDEN_SIZE,
-        dropout: float = DROPOUT_RATE,
-    ):
+        cat_hidden_size: int = 128,
+        reg_hidden_size: int = 256,
+        dropout: float = 0.3,
+    ) -> None:
+        """
+        Initializes the SelfTaughtNN model.
+
+        Args:
+            vocab_size: int, Size of the vocabulary for the embedding layer.
+            embedding_size: int, Dimension of the word embeddings.
+            categorical_dim: int, Number of categorical features.
+            cat_hidden_size: int, Number of neurons in the hidden layer for categorical features.
+            reg_hidden_size: int, Number of neurons in the hidden layer for regression.
+            dropout: float, Dropout rate for regularization.
+        """
         super(SelfTaughtNN, self).__init__()
 
         # Trainable embedding layer
@@ -65,7 +58,14 @@ class SelfTaughtNN(nn.Module):
             nn.Linear(reg_hidden_size // 2, 1),
         )
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # Embed text and average word vectors
         text_emb = self.embedding(text_seq)
         text_mask = (
@@ -94,27 +94,29 @@ class SelfTaughtNNWithResiduals(nn.Module):
     Self-taught NN with Residual Connections.
     This model extends the SelfTaughtNN by incorporating residual blocks in the regression layers.
     As an additional argument, it takes num_residual_blocks to specify how many residual blocks to use (1, 2, or 3).
-
-    Args:
-        vocab_size: Size of the vocabulary for the embedding layer.
-        categorical_dim: Number of categorical features.
-        embedding_size: Dimension of the word embeddings.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        emb_hidden_size: Number of neurons in the hidden layers for regression.
-        dropout: Dropout rate for regularization.
-        num_residual_blocks: Number of residual blocks to include in the regression layers (1, 2, or 3).
     """
 
     def __init__(
         self,
         vocab_size: int,
         categorical_dim: int,
-        embedding_size: int = EMBEDDING_DIM,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        emb_hidden_size: int = EMB_HIDDEN_SIZE,
-        dropout: float = DROPOUT_RATE,
-        num_residual_blocks: int = NUM_RESIDUAL_BLOCKS,
-    ):
+        embedding_size: int = 300,
+        cat_hidden_size: int = 128,
+        emb_hidden_size: int = 256,
+        dropout: float = 0.3,
+        num_residual_blocks: int = 2,
+    ) -> None:
+        """
+        Initializes the SelfTaughtNNWithResiduals model.
+        Args:
+            vocab_size: int, Size of the vocabulary for the embedding layer.
+            categorical_dim: int, Number of categorical features.
+            embedding_size: int, Dimension of the word embeddings, default 300.
+            cat_hidden_size: int, Number of neurons in the hidden layer for categorical features, default 128.
+            emb_hidden_size: int, Number of neurons in the hidden layers for regression, default 256.
+            dropout: float, Dropout rate for regularization, default 0.3.
+            num_residual_blocks: int, Number of residual blocks to use in regression (1, 2, or 3), default 2.
+        """
         super(SelfTaughtNNWithResiduals, self).__init__()
 
         # Trainable embedding layer
@@ -164,7 +166,14 @@ class SelfTaughtNNWithResiduals(nn.Module):
         else:
             raise ValueError("num_residual_blocks must be 1, 2, or 3")
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # 1. Embed text and average word vectors
         text_emb = self.embedding(text_seq)
         text_mask = (text_seq != 0).unsqueeze(-1).float()
@@ -197,31 +206,34 @@ class SelfTaughtNNWithResiduals(nn.Module):
 
 
 class CNNModel(nn.Module):
-    """Model using CNN with Global Max Pooling and categorical features.
+    """
+    Model using CNN with Global Max Pooling and categorical features.
     This model includes an embedding layer for text input, a convolutional layer followed by
     global max pooling to extract text features, processes categorical features through
     a fully connected layer, and combines both to predict a continuous target variable.
-
-    Args:
-        vocab_size: Size of the vocabulary for the embedding layer.
-        categorical_dim: Number of categorical features.
-        embedding_size: Dimension of the word embeddings.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        emb_hidden_size: Number of neurons in the hidden layers for regression.
-        num_filters: Number of filters in the CNN layer.
-        dropout: Dropout rate for regularization.
     """
 
     def __init__(
         self,
         vocab_size: int,
         categorical_dim: int,
-        embedding_size: int = EMBEDDING_DIM,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        emb_hidden_size: int = EMB_HIDDEN_SIZE,
-        num_filters: int = NUM_FILTERS,
-        dropout: float = DROPOUT_RATE,
-    ):
+        embedding_size: int = 300,
+        cat_hidden_size: int = 128,
+        emb_hidden_size: int = 256,
+        num_filters: int = 64,
+        dropout: float = 0.3,
+    ) -> None:
+        """
+        Initializes the CNNModel.
+            Args:
+                vocab_size: int, Size of the vocabulary for the embedding layer.
+                categorical_dim: int, Number of categorical features.
+                embedding_size: int, Dimension of the word embeddings, default 300.
+                cat_hidden_size: int, Number of neurons in the hidden layer for categorical features, default 128.
+                emb_hidden_size: int, Number of neurons in the hidden layers for regression, default 256.
+                num_filters: int, Number of filters in the CNN layer, default 64.
+                dropout: float, Dropout rate for regularization, default 0.3.
+        """
         super(CNNModel, self).__init__()
 
         # Calculate input dimension for regressor
@@ -262,7 +274,14 @@ class CNNModel(nn.Module):
             nn.Linear(emb_hidden_size // 2, 1),
         )
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # 1. Embedding
         text_emb = self.embedding(text_seq)
         text_emb = self.embedding_dropout(text_emb)
@@ -294,27 +313,29 @@ class CNNModelWithResiduals(nn.Module):
     This model extends the CNNModel by incorporating residual blocks in the regression layers.
     It includes an embedding layer for text input, a convolutional layer followed by
     a global max pooling layer, and a fully connected layer for regression.
-
-    Args:
-        vocab_size: Size of the vocabulary for the embedding layer.
-        categorical_dim: Number of categorical features.
-        embedding_size: Dimension of the word embeddings.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        emb_hidden_size: Number of neurons in the hidden layers for regression.
-        num_filters: Number of filters in the CNN layer.
-        dropout: Dropout rate for regularization.
     """
 
     def __init__(
         self,
         vocab_size: int,
         categorical_dim: int,
-        embedding_size: int = EMBEDDING_DIM,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        emb_hidden_size: int = EMB_HIDDEN_SIZE,
-        num_filters: int = NUM_FILTERS,
-        dropout: float = DROPOUT_RATE,
-    ):
+        embedding_size: int = 300,
+        cat_hidden_size: int = 128,
+        emb_hidden_size: int = 256,
+        num_filters: int = 64,
+        dropout: float = 0.3,
+    ) -> None:
+        """
+        Initializes the CNNModelWithResiduals.
+        Args:
+            vocab_size: int, Size of the vocabulary for the embedding layer.
+            categorical_dim: int, Number of categorical features.
+            embedding_size: int, Dimension of the word embeddings, default 300.
+            cat_hidden_size: int, Number of neurons in the hidden layer for categorical features, default 128.
+            emb_hidden_size: int, Number of neurons in the hidden layers for regression, default 256.
+            num_filters: int, Number of filters in the CNN layer, default 64.
+            dropout: float, Dropout rate for regularization, default 0.3.
+        """
         super(CNNModelWithResiduals, self).__init__()
 
         # 1. Embedding Layer
@@ -354,7 +375,14 @@ class CNNModelWithResiduals(nn.Module):
         # Final output layer
         self.output_layer = nn.Linear(emb_hidden_size // 2, 1)
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # 1. Embedding
         text_emb = self.embedding(text_seq)
         text_emb = self.embedding_dropout(text_emb)
@@ -393,30 +421,33 @@ class CNNModelWithResiduals(nn.Module):
 
 
 class CNNRNNModel(nn.Module):
-    """Model with CNN and vanilla RNN. Model processes text sequences with a CNN layer followed by a vanilla RNN,
+    """
+    Model with CNN and vanilla RNN. Model processes text sequences with a CNN layer followed by a vanilla RNN,
     and combines the extracted features for regression tasks.
-    Args:
-        vocab_size: Size of the vocabulary for the embedding layer.
-        categorical_dim: Number of categorical features.
-        embedding_size: Dimension of the word embeddings.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        emb_hidden_size: Number of neurons in the hidden layers for regression.
-        rnn_hidden_size: Number of neurons in the RNN hidden layer.
-        num_filters: Number of filters in the CNN layer.
-        dropout: Dropout rate for regularization.
     """
 
     def __init__(
         self,
         vocab_size,
         categorical_dim,
-        embedding_size=EMBEDDING_DIM,
-        cat_hidden_size=CAT_HIDDEN_SIZE,
-        emb_hidden_size=EMB_HIDDEN_SIZE,
-        rnn_hidden_size=RECURRENT_HIDDEN_SIZE,
-        num_filters=NUM_FILTERS,
-        dropout=DROPOUT_RATE,
-    ):
+        embedding_size=300,
+        cat_hidden_size=128,
+        emb_hidden_size=256,
+        rnn_hidden_size=128,
+        num_filters=64,
+        dropout=0.3,
+    ) -> None:
+        """Initializes the CNNRNNModel.
+        Args:
+            vocab_size: int, Size of the vocabulary for the embedding layer.
+            categorical_dim: int, Number of categorical features.
+            embedding_size: int, Dimension of the word embeddings, default 300.
+            cat_hidden_size: int, Number of neurons in the hidden layer for categorical features, default 128.
+            emb_hidden_size: int, Number of neurons in the hidden layers for regression, default 256.
+            rnn_hidden_size: int, Number of neurons in the RNN hidden layer, default 128.
+            num_filters: int, Number of filters in the CNN layer, default 64.
+            dropout: float, Dropout rate for regularization, default 0.3.
+        """
         super(CNNRNNModel, self).__init__()
 
         self.embedding = nn.Embedding(vocab_size, embedding_size, padding_idx=0)
@@ -456,7 +487,14 @@ class CNNRNNModel(nn.Module):
             nn.Linear(emb_hidden_size // 2, 1),
         )
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # Embedding
         text_emb = self.embedding(text_seq)
         text_emb = self.embedding_dropout(text_emb)
@@ -492,13 +530,24 @@ class CNNGRUModel(nn.Module):
         self,
         vocab_size,
         categorical_dim,
-        embedding_size=EMBEDDING_DIM,
-        cat_hidden_size=CAT_HIDDEN_SIZE,
-        emb_hidden_size=EMB_HIDDEN_SIZE,
-        gru_hidden_size=RECURRENT_HIDDEN_SIZE,
-        num_filters=NUM_FILTERS,
-        dropout=DROPOUT_RATE,
-    ):
+        embedding_size=300,
+        cat_hidden_size=128,
+        emb_hidden_size=256,
+        gru_hidden_size=128,
+        num_filters=64,
+        dropout=0.3,
+    ) -> None:
+        """Initializes the CNNGRUModel.
+        Args:
+            vocab_size: int, Size of the vocabulary for the embedding layer.
+            categorical_dim: int, Number of categorical features.
+            embedding_size: int, Dimension of the word embeddings, default 300.
+            cat_hidden_size: int, Number of neurons in the hidden layer for categorical features, default 128.
+            emb_hidden_size: int, Number of neurons in the hidden layers for regression, default 256.
+            gru_hidden_size: int, Number of neurons in the GRU hidden layer, default 128.
+            num_filters: int, Number of filters in the CNN layer, default 64.
+            dropout: float, Dropout rate for regularization, default 0.3.
+        """
         super(CNNGRUModel, self).__init__()
 
         self.embedding = nn.Embedding(vocab_size, embedding_size, padding_idx=0)
@@ -540,7 +589,15 @@ class CNNGRUModel(nn.Module):
             nn.Linear(emb_hidden_size // 2, 1),
         )
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         text_emb = self.embedding(text_seq)
         text_emb = self.embedding_dropout(text_emb)
 
@@ -577,13 +634,24 @@ class CNNLSTMModel(nn.Module):
         self,
         vocab_size,
         categorical_dim,
-        embedding_size=EMBEDDING_DIM,
-        cat_hidden_size=CAT_HIDDEN_SIZE,
-        emb_hidden_size=EMB_HIDDEN_SIZE,
-        lstm_hidden_size=RECURRENT_HIDDEN_SIZE,
-        num_filters=NUM_FILTERS,
-        dropout=DROPOUT_RATE,
-    ):
+        embedding_size=300,
+        cat_hidden_size=128,
+        emb_hidden_size=256,
+        lstm_hidden_size=128,
+        num_filters=64,
+        dropout=0.3,
+    ) -> None:
+        """Initializes the CNNLSTMModel.
+        Args:
+            vocab_size: int, Size of the vocabulary for the embedding layer.
+            categorical_dim: int, Number of categorical features.
+            embedding_size: int, Dimension of the word embeddings, default 300.
+            cat_hidden_size: int, Number of neurons in the hidden layer for categorical features, default 128.
+            emb_hidden_size: int, Number of neurons in the hidden layers for regression, default 256.
+            lstm_hidden_size: int, Number of neurons in the LSTM hidden layer, default 128.
+            num_filters: int, Number of filters in the CNN layer, default 64.
+            dropout: float, Dropout rate for regularization, default 0.3.
+        """
         super(CNNLSTMModel, self).__init__()
 
         self.embedding = nn.Embedding(vocab_size, embedding_size, padding_idx=0)
@@ -625,7 +693,14 @@ class CNNLSTMModel(nn.Module):
             nn.Linear(emb_hidden_size // 2, 1),
         )
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+        Args:
+            text_seq: torch.Tensor, Input text sequences (word indices).
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor, Model output.
+        """
         text_emb = self.embedding(text_seq)
         text_emb = self.embedding_dropout(text_emb)
 

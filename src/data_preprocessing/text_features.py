@@ -1,64 +1,57 @@
 import os
 import logging
-from typing import Tuple, Dict, Any, Optional, Union, List
+from typing import Any, Optional, Union
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import make_pipeline, Pipeline
 from preprocessors.text_preprocessors import MinimalTextPreprocessor
 from preprocessors.tfidf_transformer import TfidfTransformer
 from preprocessors.text_embedder import TextEmbedder
-from config.config import (
-    TITLE_COLUMN,
-    DESC_COLUMN,
-    TFIDF_FEATURES_DIR,
-    EMBEDDINGS_DIR,
-    SENTENCE_TRANSFORMER_MODEL,
-)
 
 
 def preprocess_text_data_tfidf(
     X_train: pd.DataFrame,
     X_valid: pd.DataFrame,
     X_test: pd.DataFrame,
-    title_column: str = TITLE_COLUMN,
-    desc_column: str = DESC_COLUMN,
+    title_column: str = "Title",
+    desc_column: str = "FullDescription",
     title_max_features: int = 50,
     desc_max_features: int = 800,
     title_use_svd: bool = False,
     title_n_components: int = 10,
     desc_use_svd: bool = False,
     desc_n_components: int = 50,
-    title_stop_words: Optional[Union[str, List[str]]] = None,
-    desc_stop_words: Optional[Union[str, List[str]]] = None,
+    title_stop_words: Optional[Union[str, list[str]]] = None,
+    desc_stop_words: Optional[Union[str, list[str]]] = None,
     save_features: bool = True,
     feature_prefix: str = "",
-    features_dir: str = TFIDF_FEATURES_DIR,
+    features_dir: str = "tfidf_features",
     logger: logging.Logger = None,
-) -> Tuple[Dict[str, np.ndarray], int, int, Any]:
+) -> tuple[dict[str, np.ndarray], int, int, Any]:
     """
     Generates TF-IDF features and optionally saves them to disk.
 
     Args:
-        X_train: Training data.
-        X_valid: Validation data.
-        X_test: Test data.
-        title_column: Name of the title column.
-        desc_column: Name of the description column.
-        title_max_features: Max TF-IDF features for title.
-        desc_max_features: Max TF-IDF features for description.
-        title_use_svd: Whether to apply SVD to title features.
-        title_n_components: Number of SVD components for title.
-        desc_use_svd: Whether to apply SVD to description features.
-        desc_n_components: Number of SVD components for description.
-        title_stop_words: Stop words for title vectorizer.
-        desc_stop_words: Stop words for description vectorizer.
-        save_features: Whether to save features to disk.
-        feature_prefix: Prefix for saved feature files.
-        features_dir: Directory to save features.
-        logger: Optional logger for logging information.
+        X_train: pd.DataFrame, Training data.
+        X_valid: pd.DataFrame, Validation data.
+        X_test: pd.DataFrame, Test data.
+        title_column: str, Name of the title column, default is "Title".
+        desc_column: str, Name of the description column.
+        title_max_features: int, Max TF-IDF features for title, default is 50.
+        desc_max_features: int, Max TF-IDF features for description, default is 800.
+        title_use_svd: bool, Whether to apply SVD to title features, default is False.
+        title_n_components: int, Number of SVD components for title, default is 10.
+        desc_use_svd: bool, Whether to apply SVD to description features, default is False.
+        desc_n_components: int, Number of SVD components for description, default is 50.
+        title_stop_words: Optional[Union[str, list[str]]], Stop words for title vectorizer.
+        desc_stop_words: Optional[Union[str, list[str]]], Stop words for description vectorizer.
+        save_features: bool, Whether to save features to disk, default is True.
+        feature_prefix: str, Prefix for saved feature files.
+        features_dir: str, Directory to save features, default is 'tfidf_features'.
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        Tuple of (dict with all features, title_dim, desc_dim, text_preprocessor).
+        tuple, Tuple of (dict with all features, title_dim, desc_dim, text_preprocessor).
     """
     # Step 1: Clean text
     text_preprocessor = MinimalTextPreprocessor()
@@ -140,19 +133,19 @@ def preprocess_text_data_tfidf(
 
 def load_tfidf_features(
     feature_prefix: str = "",
-    features_dir: str = TFIDF_FEATURES_DIR,
+    features_dir: str = "tfidf_features",
     logger: logging.Logger = None,
-) -> Dict[str, np.ndarray]:
+) -> dict[str, np.ndarray]:
     """
     Loads pre-computed TF-IDF features from disk.
 
     Args:
-        feature_prefix: Prefix used when saving features.
-        features_dir: Directory where features are stored.
-        logger: Optional logger for logging information.
+        feature_prefix: str, Prefix used when saving features.
+        features_dir: str, Directory where features are stored, default is 'tfidf_features'.
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        Dictionary containing all loaded features.
+        dict, Dictionary containing all loaded features.
     """
     feature_names = [
         "X_train_text",
@@ -180,31 +173,31 @@ def preprocess_text_data_embeddings(
     X_train: pd.DataFrame,
     X_valid: pd.DataFrame,
     X_test: pd.DataFrame,
-    title_column: str = TITLE_COLUMN,
-    desc_column: str = DESC_COLUMN,
-    embedding_model_name: str = SENTENCE_TRANSFORMER_MODEL,
+    title_column: str = "Title",
+    desc_column: str = "FullDescription",
+    embedding_model_name: str = "all-MiniLM-L12-v2",
     save_embeddings: bool = True,
     embedding_prefix: str = "",
-    embeddings_dir: str = EMBEDDINGS_DIR,
+    embeddings_dir: str = "embeddings",
     logger: logging.Logger = None,
-) -> Tuple[Dict[str, np.ndarray], int]:
+) -> tuple[dict[str, np.ndarray], int]:
     """
     Generates text embeddings using SentenceTransformers and optionally saves them to disk.
 
     Args:
-        X_train: Training data.
-        X_valid: Validation data.
-        X_test: Test data.
-        title_column: Name of the title column.
-        desc_column: Name of the description column.
-        embedding_model_name: SentenceTransformer model name.
-        save_embeddings: Whether to save embeddings to disk.
-        embedding_prefix: Prefix for saved embedding files.
-        embeddings_dir: Directory to save embeddings.
-        logger: Optional logger for logging information.
+        X_train: pd.DataFrame, Training data.
+        X_valid: pd.DataFrame, Validation data.
+        X_test: pd.DataFrame, Test data.
+        title_column: str, Name of the title column, default is "Title".
+        desc_column: str, Name of the description column, default is "FullDescription".
+        embedding_model_name: str, SentenceTransformer model name, default is "all-MiniLM-L12-v2".
+        save_embeddings: bool, Whether to save embeddings to disk, default is True.
+        embedding_prefix: str, Prefix for saved embedding files, default is "".
+        embeddings_dir: str, Directory to save embeddings, default is "embeddings".
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        Tuple of (dict with all embeddings, embedding dimension).
+        tuple, Tuple of (dict with all embeddings, embedding dimension).
     """
     # Build embedding pipelines
     title_embedding_pipeline = Pipeline(
@@ -268,18 +261,19 @@ def preprocess_text_data_embeddings(
 
 def load_embeddings(
     embedding_prefix: str = "",
-    embeddings_dir: str = EMBEDDINGS_DIR,
+    embeddings_dir: str = "embeddings",
     logger: logging.Logger = None,
-) -> Dict[str, np.ndarray]:
+) -> dict[str, np.ndarray]:
     """
     Loads pre-computed embeddings from disk.
 
     Args:
-        embedding_prefix: Prefix used when saving embeddings.
-        embeddings_dir: Directory where embeddings are stored.
+        embedding_prefix: str, Prefix used when saving embeddings, default is "".
+        embeddings_dir: str, Directory where embeddings are stored, default is "embeddings".
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        Dictionary containing all loaded embeddings.
+        dict[str, np.ndarray], Dictionary containing all loaded embeddings.
     """
     embedding_names = [
         "X_train_text",

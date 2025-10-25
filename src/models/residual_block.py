@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from config.config import DROPOUT_RATE
 
 
 class ResidualBlock(nn.Module):
@@ -10,14 +9,15 @@ class ResidualBlock(nn.Module):
     If dimensions don't match, uses a projection layer.
     This block consists of two linear layers with Batch Normalization and ReLU activation,
     along with dropout for regularization.
-
-    Args:
-        input_dim: Dimension of the input features.
-        output_dim: Dimension of the output features.
-        dropout: Dropout probability for regularization.
     """
 
-    def __init__(self, input_dim, output_dim, dropout=DROPOUT_RATE):
+    def __init__(self, input_dim, output_dim, dropout=0.3) -> None:
+        """Initializes the ResidualBlock.
+        Args:
+            input_dim: int, Dimension of the input features.
+            output_dim: int, Dimension of the output features.
+            dropout: float, Dropout rate for regularization. Default is 0.3.
+        """
         super(ResidualBlock, self).__init__()
 
         self.fc1 = nn.Linear(input_dim, output_dim)
@@ -31,7 +31,11 @@ class ResidualBlock(nn.Module):
         if input_dim != output_dim:
             self.projection = nn.Linear(input_dim, output_dim)
 
-    def forward(self, x):
+    def forward(self, x) -> torch.Tensor:
+        """Defines the forward pass of the ResidualBlock.
+        Args:
+            x: torch.Tensor, Input features tensor.
+        """
         identity = x
 
         # First layer

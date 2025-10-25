@@ -1,25 +1,21 @@
 import torch
-from typing import Tuple
 
-
-def get_device() -> Tuple[torch.device, str]:
+def get_device() -> tuple[torch.device, str]:
     """
     Detects and sets up the appropriate PyTorch device (MPS, CUDA, or CPU).
 
     The function checks for Apple Silicon (MPS) first, then NVIDIA (CUDA),
     and defaults to CPU. It also applies the manual seed for MPS if available.
 
-    Parameters
-    ----------
-    seed : int
-        The random seed value to use for torch.mps.manual_seed().
+    Args:
+        seed_value : Optional[int], default=42
+            The integer value used to set the random seeds.
 
-    Returns
-    -------
-    Tuple[torch.device, str]
-        A tuple containing:
-        - The selected torch.device object.
-        - A string describing the selected device.
+    Returns:
+        tuple[torch.device, str]
+            A tuple containing:
+            - The selected torch.device object.
+            - A string describing the selected device.
     """
     if torch.backends.mps.is_available():
         device = torch.device("mps")

@@ -124,18 +124,19 @@ Text columns added:
 ```
 PROJECT2_NEURAL_NETWORK_PREDICTION/
 ├── config/                               # Configuration files
-│   └── config.py                         # Global constants and paths
+│   ├── config.yaml                      # Main configuration file
+│   └── config_loader.py                  # Loads configuration settings
 │
 ├── data/                                 # Raw dataset
 │   └── Train_rev1.csv                    # Main training dataset
 │
 ├── embeddings/                           # Pre-trained or learned word embeddings
 │
-├── preprocessors/                        # Saved preprocessing objects 
+├── fitted_preprocessors/                 # Saved preprocessing objects
 │
 ├── tfidf_features/                       # Stored TF-IDF features
 │
-├── models/                               # Saved trained models 
+├── trained_models/                       # Saved trained models
 │
 ├── notebooks/                            # Jupyter notebooks
 │   └── nlp_salary_prediction_project.ipynb  # Main analysis and modeling notebook
@@ -183,8 +184,10 @@ PROJECT2_NEURAL_NETWORK_PREDICTION/
 │   │
 │   ├── training/                         # Training and evaluation logic
 │   │   ├── early_stopping.py
-│   │   ├── evaluate_model.py
 │   │   └── train_model.py
+│   │
+│   ├── evaluation/                        # Model evaluation logic
+│   │   └── evaluate_model.py
 │   │
 │   └── utils/                            # Helper functions
 │       ├── device_utils.py               # Device (MPS/CPU/GPU) handling

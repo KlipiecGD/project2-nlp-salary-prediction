@@ -1,6 +1,6 @@
 import re
 import string
-from typing import Optional, List, Set
+from typing import Optional
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from nltk.corpus import stopwords
@@ -24,17 +24,16 @@ class TextPreprocessor(BaseEstimator, TransformerMixin):
         remove_stopwords: bool = False,
         remove_numbers: bool = False,
         lemmatize: bool = False,
-    ):
+    ) -> None:
         """
         Initializes the TextPreprocessor with various preprocessing options.
 
         Args:
-            lowercase: If True, converts all text to lowercase. Defaults to True.
-            remove_punctuation: If True, removes all punctuation from the text.
-                                Defaults to False.
-            remove_stopwords: If True, removes common English stopwords. Defaults to False.
-            remove_numbers: If True, removes all numbers from the text. Defaults to False.
-            lemmatize: If True, reduces words to their base or root form. Defaults to False.
+            lowercase: bool, If True, converts all text to lowercase. Defaults to True.
+            remove_punctuation: bool, If True, removes all punctuation from the text. Defaults to False.
+            remove_stopwords: bool, If True, removes common English stopwords. Defaults to False.
+            remove_numbers: bool, If True, removes all numbers from the text. Defaults to False.
+            lemmatize: bool, If True, reduces words to their base or root form. Defaults to False.
         """
         self.lowercase = lowercase
         self.remove_punctuation = remove_punctuation
@@ -52,7 +51,7 @@ class TextPreprocessor(BaseEstimator, TransformerMixin):
         Cleans a single text string based on the initialized parameters.
 
         Args:
-            text: The text string to be cleaned.
+            text: str, The text string to be cleaned.
 
         Returns:
             The cleaned text string.
@@ -107,10 +106,20 @@ class TextPreprocessor(BaseEstimator, TransformerMixin):
 
         return text.strip()
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> "TextPreprocessor":
+        """Fits the transformer. No action needed for this preprocessor."""
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transforms the input DataFrame by applying the cleaning steps.
+
+        Args:
+            X: pd.DataFrame, The input DataFrame to transform.
+
+        Returns:
+            pd.DataFrame, The transformed DataFrame with cleaned text.
+        """
         X_copy = X.copy()
 
         if "Title" in X_copy.columns:
@@ -142,10 +151,10 @@ class MinimalTextPreprocessor(BaseEstimator, TransformerMixin):
         Cleans a single text string by removing specific patterns.
 
         Args:
-            text: The text string to be cleaned.
+            text: str, The text string to be cleaned.
 
         Returns:
-            The cleaned text string.
+            str, The cleaned text string.
         """
         if pd.isnull(text):
             return ""
@@ -162,10 +171,20 @@ class MinimalTextPreprocessor(BaseEstimator, TransformerMixin):
 
         return text
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> "MinimalTextPreprocessor":
+        """Fits the transformer. No action needed for this preprocessor."""
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Transforms the input DataFrame by applying the cleaning steps.
+
+        Args:
+            X: pd.DataFrame, The input DataFrame to transform.
+
+        Returns:
+            pd.DataFrame, The transformed DataFrame with cleaned text.
+        """
         X_copy = X.copy()
         if "Title" in X_copy.columns:
             X_copy["Title"] = X_copy["Title"].apply(self.clean_text)
@@ -175,7 +194,7 @@ class MinimalTextPreprocessor(BaseEstimator, TransformerMixin):
 
 
 def clean_tokens(
-    tokens: List[str],
+    tokens: list[str],
     remove_urls: bool = True,
     remove_emails: bool = True,
     remove_numbers: bool = False,
@@ -184,26 +203,25 @@ def clean_tokens(
     lemmatize: bool = False,
     min_token_length: int = 1,
     max_token_length: Optional[int] = None,
-    stop_words: Optional[Set[str]] = None,
-) -> List[str]:
+    stop_words: Optional[set[str]] = None,
+) -> list[str]:
     """
     Clean a list of tokens with multiple configurable options.
 
     Args:
-        tokens: List of string tokens to clean
-        remove_urls: Remove tokens that are URLs (http/https/www)
-        remove_emails: Remove tokens that are email addresses
-        remove_numbers: Remove tokens that are pure numbers
-        remove_punctuation: Remove tokens that are pure punctuation
-        remove_special_chars: Remove special characters from tokens
-        remove_stopwords: Remove common stopwords
-        lemmatize: Apply lemmatization to tokens
-        min_token_length: Minimum length for tokens
-        max_token_length: Maximum length for tokens (None = no limit)
-        stop_words: Custom set of stopwords (uses NLTK English stopwords if None)
-
+        tokens: list[str], List of tokens to be cleaned.
+        remove_urls: bool, Whether to remove tokens that are URLs, default is True.
+        remove_emails: bool, Whether to remove tokens that are email addresses, default is True.
+        remove_numbers: bool, Whether to remove tokens that are pure numbers, default is False.
+        remove_special_chars: bool, Whether to remove special characters from tokens, default is True.
+        remove_stopwords: bool, Whether to remove common English stopwords, default is False.
+        lemmatize: bool, Whether to lemmatize tokens, default is False.
+        min_token_length: int, Minimum length of tokens to keep, default is 1.
+        max_token_length: Optional[int], Maximum length of tokens to keep, default is None (no limit).
+        stop_words: Optional[set[str]], Set of stopwords to use if remove_stopwords is True,
+                    default is None (uses NLTK English stopwords).
     Returns:
-        Cleaned list of tokens
+        list[str]: Cleaned list of tokens
     """
     if not tokens:
         return []

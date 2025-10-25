@@ -1,34 +1,146 @@
-import yaml
 import os
+import yaml
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Literal, Optional
+from pydantic import BaseModel, Field, field_validator
 
 
-class Config:
-    """Configuration class that loads from YAML and provides attribute access."""
+class GeneralConfig(BaseModel):
+    """General settings."""
+    random_seed: int = Field(ge=0, description="Random seed for reproducibility")
+
+
+class PathsConfig(BaseModel):
+    """Directory and file paths."""
+    data_filepath: str
+    models_dir: str
+    preprocessors_dir: str
+    tfidf_features_dir: str
+    embeddings_dir: str
+    reports_dir: str
+    plots_dir: str
     
-    def __init__(self, config_path: str = "config/config.yaml"):
+    @field_validator('*')
+    @classmethod
+    def validate_paths(cls, v: str) -> str:
+        """Ensure paths use forward slashes."""
+        return v.replace('\\', '/')
+
+
+class DataColumnsConfig(BaseModel):
+    """Column name configuration."""
+    title: str
+    description: str
+    target: str
+    categorical: list[str]
+    high_cardinality: list[str]
+
+
+class DataSplitConfig(BaseModel):
+    """Train/validation/test split configuration."""
+    test_size: float = Field(gt=0, lt=1, description="Test set proportion")
+    valid_size: float = Field(gt=0, lt=1, description="Validation proportion of test set")
+
+
+class DataConfig(BaseModel):
+    """Data-related configuration."""
+    columns: DataColumnsConfig
+    split: DataSplitConfig
+
+
+class SchedulerConfig(BaseModel):
+    """Learning rate scheduler configuration."""
+    patience: int = Field(ge=0)
+    factor: float = Field(gt=0, lt=1)
+
+
+class EarlyStoppingConfig(BaseModel):
+    """Early stopping configuration."""
+    patience: int = Field(ge=0)
+
+
+class TrainingConfig(BaseModel):
+    """Training hyperparameters."""
+    num_workers: int = Field(ge=0)
+    batch_size: int = Field(gt=0)
+    epochs: int = Field(gt=0)
+    learning_rate: float = Field(gt=0)
+    optimizer: Literal["adam", "sgd"] = "adam"
+    loss_function: Literal["mse", "mae"] = "mse"
+    scheduler: SchedulerConfig
+    early_stopping: EarlyStoppingConfig
+
+
+class EmbeddingsConfig(BaseModel):
+    """Embedding layer configuration."""
+    max_seq_length: int = Field(gt=0)
+    embedding_dim: int = Field(gt=0)
+    w2v_embedding_dim: int = Field(gt=0)
+
+
+class ArchitectureConfig(BaseModel):
+    """Neural network architecture configuration."""
+    dropout_rate: float = Field(ge=0, le=1)
+    cat_hidden_size: int = Field(gt=0)
+    reg_hidden_size: int = Field(gt=0)
+    emb_hidden_size: int = Field(gt=0)
+    recurrent_hidden_size: int = Field(gt=0)
+    num_filters: int = Field(gt=0)
+    num_residual_blocks: int = Field(ge=1, le=3)
+
+
+class LossConfig(BaseModel):
+    """Loss function configuration."""
+    delta: float = Field(gt=0)
+
+
+class ModelConfig(BaseModel):
+    """Model architecture and configuration."""
+    embeddings: EmbeddingsConfig
+    architecture: ArchitectureConfig
+    loss: LossConfig
+
+
+class PretrainedConfig(BaseModel):
+    """Pretrained model configuration."""
+    sentence_transformer: str
+    word_embeddings: str
+
+
+class Config(BaseModel):
+    """Root configuration model."""
+    general: GeneralConfig
+    paths: PathsConfig
+    data: DataConfig
+    training: TrainingConfig
+    model: ModelConfig
+    pretrained: PretrainedConfig
+    
+    @classmethod
+    def from_yaml(cls, config_path: str) -> "Config":
         """
-        Load configuration from YAML file.
+        Load configuration from YAML file with validation.
         
         Args:
-            config_path: Path to the YAML configuration file
+            config_path: Path to YAML configuration file
+            
+        Returns:
+            Validated Config instance
             
         Raises:
             FileNotFoundError: If config file doesn't exist
-            yaml.YAMLError: If config file is invalid YAML
+            ValidationError: If config doesn't match schema
         """
         config_file = Path(config_path)
         if not config_file.exists():
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
         
         with open(config_file, 'r') as f:
-            self._config = yaml.safe_load(f)
+            config_dict = yaml.safe_load(f)
         
-        if self._config is None:
-            raise ValueError(f"Configuration file is empty: {config_path}")
+        return cls(**config_dict)
     
-    def get(self, key_path: str, default: Any = None) -> Any:
+    def get(self, key_path: str, default=None):
         """
         Get nested configuration value using dot notation.
         
@@ -38,71 +150,24 @@ class Config:
             
         Returns:
             Configuration value or default
-        
-        Examples:
-            >>> config.get('training.batch_size')
-            64
-            >>> config.get('model.architecture.dropout_rate')
-            0.3
-            >>> config.get('nonexistent.key', 42)
-            42
         """
         keys = key_path.split('.')
-        value = self._config
+        value = self
         
         try:
             for key in keys:
-                value = value[key]
+                if hasattr(value, key):
+                    value = getattr(value, key)
+                else:
+                    return default
             return value
-        except (KeyError, TypeError):
+        except (AttributeError, KeyError):
             return default
     
-    def to_dict(self) -> Dict:
-        """Return the full configuration as a dictionary."""
-        return self._config.copy()
-    
-    def __getitem__(self, key: str) -> Any:
-        """Allow dictionary-style access: config['general']"""
-        return self._config[key]
-    
-    def __contains__(self, key: str) -> bool:
-        """Support 'in' operator: 'general' in config"""
-        return key in self._config
-    
-    # Convenience properties for top-level access
-    @property
-    def general(self) -> Dict:
-        """Access general settings."""
-        return self._config.get('general', {})
-    
-    @property
-    def paths(self) -> Dict:
-        """Access path settings."""
-        return self._config.get('paths', {})
-    
-    @property
-    def data(self) -> Dict:
-        """Access data settings."""
-        return self._config.get('data', {})
-    
-    @property
-    def training(self) -> Dict:
-        """Access training settings."""
-        return self._config.get('training', {})
-    
-    @property
-    def model(self) -> Dict:
-        """Access model settings."""
-        return self._config.get('model', {})
-    
-    @property
-    def pretrained(self) -> Dict:
-        """Access pretrained model settings."""
-        return self._config.get('pretrained', {})
-    
-    def __repr__(self) -> str:
-        """String representation of config."""
-        return f"Config({list(self._config.keys())})"
+    class Config:
+        """Pydantic configuration."""
+        validate_assignment = True
+        extra = "forbid"  # Prevent extra fields
 
 
 # Singleton instance
@@ -118,12 +183,7 @@ def get_config(config_path: Optional[str] = None, reload: bool = False) -> Confi
         reload: Force reload of configuration
         
     Returns:
-        Config instance
-        
-    Examples:
-        >>> config = get_config()
-        >>> config = get_config('config/config_prod.yaml')
-        >>> config = get_config(reload=True)  # Force reload
+        Validated Config instance
     """
     global _config
     
@@ -137,7 +197,7 @@ def get_config(config_path: Optional[str] = None, reload: bool = False) -> Confi
             if not Path(config_path).exists():
                 config_path = 'config/config.yaml'
         
-        _config = Config(config_path)
+        _config = Config.from_yaml(config_path)
     
     return _config
 

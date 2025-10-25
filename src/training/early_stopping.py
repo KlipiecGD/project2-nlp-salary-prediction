@@ -18,20 +18,20 @@ class EarlyStopping:
         verbose: bool = False,
         restore_best_weights: bool = True,
         logger: logging.Logger = None,
-    ):
+    ) -> None:
         """
         Initializes the EarlyStopping instance.
 
         Args:
-            patience: How many epochs to wait for a validation loss improvement before
+            patience: int, How many epochs to wait for a validation loss improvement before
                       stopping. Defaults to 5.
-            delta: Minimum change in the monitored quantity to qualify as an improvement.
+            delta: float, Minimum change in the monitored quantity to qualify as an improvement.
                    Defaults to 0.
-            verbose: If True, prints a message for each improvement and when early stopping
+            verbose: bool, If True, prints a message for each improvement and when early stopping
                      is triggered. Defaults to False.
-            restore_best_weights: If True, the model's weights from the best-performing
+            restore_best_weights: bool, If True, the model's weights from the best-performing
                                   epoch are restored upon early stopping. Defaults to True.
-            logger: Optional logger instance. If None and verbose is True, will print to console.
+            logger: Optional[logging.Logger], Optional logger instance. If None and verbose is True, will print to console.
         """
         self.patience = patience
         self.delta = delta
@@ -43,13 +43,13 @@ class EarlyStopping:
         self.no_improvement_count = 0
         self.stop_training = False
 
-    def _log(self, message: str, level: str = "info"):
+    def _log(self, message: str, level: str = "info") -> None:
         """
         Internal method to handle logging/printing.
 
         Args:
-            message: The message to log or print
-            level: Logging level ('info', 'warning', 'debug')
+            message: str, The message to log or print
+            level: str, Logging level ('info', 'warning', 'debug'), default 'info'
         """
         if self.verbose:
             if self.logger:
@@ -62,13 +62,13 @@ class EarlyStopping:
             else:
                 print(message)
 
-    def check_early_stop(self, val_loss: float, model: torch.nn.Module):
+    def check_early_stop(self, val_loss: float, model: torch.nn.Module) -> None:
         """
         Checks the validation loss and updates the internal state.
 
         Args:
-            val_loss: The current validation loss.
-            model: The PyTorch model being trained.
+            val_loss: float, The current validation loss.
+            model: torch.nn.Module, The PyTorch model being trained.
         """
         if self.best_loss is None or val_loss < self.best_loss - self.delta:
             # Improvement detected

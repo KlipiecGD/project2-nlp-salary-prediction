@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from config.config import CAT_HIDDEN_SIZE, DROPOUT_RATE, REG_HIDDEN_SIZE
 
 
 class EmbeddingMatrixNN(nn.Module):
@@ -9,25 +8,28 @@ class EmbeddingMatrixNN(nn.Module):
     Neural Network model using a pre-trained embedding matrix combined with categorical features for regression.
     This model includes an embedding layer initialized with a given embedding matrix, processes categorical features through
     a fully connected layer, and combines both to predict a continuous target variable.
-
-    Args:
-        embedding_matrix: Pre-trained embedding matrix as a NumPy array.
-        categorical_dim: Dimension of the categorical feature input.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        reg_hidden_size: Number of neurons in the hidden layer for regression.
-        dropout: Dropout probability for regularization.
-        requires_grad: If True, the embedding layer weights will be updated during training. Default is False (frozen embeddings).
     """
 
     def __init__(
         self,
         embedding_matrix: np.ndarray,
         categorical_dim: int,
-        cat_hidden_size=CAT_HIDDEN_SIZE,
-        reg_hidden_size=REG_HIDDEN_SIZE,
-        dropout=DROPOUT_RATE,
+        cat_hidden_size=128,
+        reg_hidden_size=256,
+        dropout=0.3,
         requires_grad=False,
-    ):
+    ) -> None:
+        """
+        Initializes the EmbeddingMatrixNN model.
+
+        Args:
+            embedding_matrix: np.ndarray, Pre-trained embedding matrix.
+            categorical_dim: int, Dimension of the categorical features.
+            cat_hidden_size: int, Hidden layer size for categorical features processing, default 128.
+            reg_hidden_size: int, Hidden layer size for regression layers, default 256.
+            dropout: float, Dropout rate for regularization, default 0.3.
+            requires_grad: bool, If True, allows fine-tuning of the embedding layer.
+        """
         super(EmbeddingMatrixNN, self).__init__()
 
         vocab_size, embedding_dim = embedding_matrix.shape
@@ -60,7 +62,15 @@ class EmbeddingMatrixNN(nn.Module):
             nn.Linear(reg_hidden_size // 2, 1),
         )
 
-    def forward(self, text_seq, cat_features):
+    def forward(self, text_seq, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+
+        Args:
+            text_seq: torch.Tensor, Input text sequences (token indices).
+            cat_features: torch.Tensor, Input categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # Embed text and average word vectors
         text_emb = self.embedding(text_seq)
         text_mask = (

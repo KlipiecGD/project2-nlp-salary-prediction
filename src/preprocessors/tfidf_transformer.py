@@ -3,8 +3,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
-from typing import Optional, List
-from config.config import RANDOM_SEED, TITLE_COLUMN
+from typing import Optional
 
 
 class TfidfTransformer(BaseEstimator, TransformerMixin):
@@ -18,30 +17,30 @@ class TfidfTransformer(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        text_column: str = TITLE_COLUMN,
+        text_column: str = "Title",
         max_features: int = 50,
         use_svd: bool = False,
         n_components: int = 10,
-        stop_words: Optional[List[str] | str] = None,
-        random_state: int = RANDOM_SEED,
-    ):
+        stop_words: Optional[list[str] | str] = None,
+        random_state: int = 42,
+    ) -> None:
         """
         Initializes the TfidfTransformer.
 
         Args:
-            text_column: The name of the DataFrame column containing the text data.
+            text_column: str, The name of the DataFrame column containing the text data.
                          Defaults to 'Title'.
-            max_features: The maximum number of features (tokens) to be considered by
+            max_features: int, The maximum number of features (tokens) to be considered by
                           the TfidfVectorizer. Defaults to 50.
-            use_svd: If True, applies TruncatedSVD for dimensionality reduction.
+            use_svd: bool, If True, applies TruncatedSVD for dimensionality reduction.
                      Defaults to False.
-            n_components: The number of components to keep after SVD. This is only
+            n_components: int, The number of components to keep after SVD. This is only
                           used if `use_svd` is True. Defaults to 10.
-            stop_words: A list of stop words or a string indicating a language
+            stop_words: list[str] | str, A list of stop words or a string indicating a language
                         (e.g., 'english'). Passed directly to TfidfVectorizer.
                         Defaults to None.
-            random_state: Random seed for reproducibility, used in SVD.
-                           Defaults to RANDOM_SEED.
+            random_state: int, Random seed for reproducibility, used in SVD.
+                           Defaults to 42.
         """
         self.text_column = text_column
         self.max_features = max_features
@@ -70,6 +69,16 @@ class TfidfTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame | np.ndarray:
+        """
+        Transforms the input DataFrame by applying the fitted TF-IDF vectorizer
+        and optional SVD.
+
+        Args:
+            X: pd.DataFrame, The input DataFrame to transform.
+
+        Returns:
+            pd.DataFrame | np.ndarray, The transformed TF-IDF matrix.
+        """
         # Check for fitted attribute
         if not hasattr(self, "vectorizer_"):
             raise RuntimeError(

@@ -3,22 +3,22 @@ import logging
 import torch
 from torch import nn
 from typing import Optional
-from config.config import MODELS_DIR
+
 
 def save_model(
     model: nn.Module,
     model_name: str,
-    model_dir: str = MODELS_DIR,
+    model_dir: str = "trained_models",
     logger: Optional[logging.Logger] = None,
 ) -> None:
     """
     Save the trained model to the specified directory.
 
     Args:
-        model: Trained PyTorch model to be saved.
-        model_name: Name of the model file (without extension).
-        model_dir: Directory where the model will be saved.
-        logger: Optional logger for logging information.
+        model: nn.Module, Trained PyTorch model to be saved.
+        model_name: str, Name of the model file (without extension).
+        model_dir: str, Directory where the model will be saved, default 'trained_models'.
+        logger: Optional[logging.Logger], Optional logger for logging information.
     """
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)

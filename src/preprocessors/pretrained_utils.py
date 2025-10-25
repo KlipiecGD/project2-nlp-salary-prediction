@@ -1,20 +1,21 @@
 import logging
-from typing import Optional, Dict
+from typing import Optional
 import gensim.downloader as api
 import numpy as np
-from config.config import PRETRAINED_MODEL
 
 
-def load_pretrained_embeddings(model_name=PRETRAINED_MODEL, logger=None):
+def load_pretrained_embeddings(
+    model_name: str = "fasttext", logger: Optional[logging.Logger] = None
+) -> object:
     """
     Load pre-trained embeddings.
 
     Args:
-        model_name: 'word2vec', 'glove', or 'fasttext'
+        model_name: str, The name of the pre-trained model to use ('word2vec', 'glove', or 'fasttext'), default is 'fasttext'.
         logger: Logger object for logging information
 
     Returns:
-        Loaded embedding model
+        object, Loaded embedding model
     """
     if logger:
         logger.info(f"Loading {model_name} pre-trained embeddings...")
@@ -45,7 +46,7 @@ def load_pretrained_embeddings(model_name=PRETRAINED_MODEL, logger=None):
 
 
 def create_embedding_matrix_from_pretrained(
-    vocab: Dict[str, int],
+    vocab: dict[str, int],
     pretrained_model,
     embedding_dim: int = None,
     logger: Optional[logging.Logger] = None,
@@ -54,12 +55,12 @@ def create_embedding_matrix_from_pretrained(
     Create embedding matrix from pre-trained model for your vocabulary.
 
     Args:
-        vocab: Your vocabulary dictionary
-        pretrained_model: Pre-trained gensim model
-        embedding_dim: Embedding dimension (auto-detected if None)
-
+        vocab: dict[str, int], Vocabulary mapping words to indices.
+        pretrained_model: Pre-trained embedding model (e.g., Word2Vec, GloVe, FastText).
+        embedding_dim: int, Dimension of embeddings; if None, uses model's vector size.
+        logger: Optional[logging.Logger], Optional logger for logging information.
     Returns:
-        Embedding matrix of shape (vocab_size, embedding_dim)
+        np.ndarray, Embedding matrix.
     """
     if embedding_dim is None:
         embedding_dim = pretrained_model.vector_size

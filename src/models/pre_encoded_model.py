@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from config.config import CAT_HIDDEN_SIZE, DROPOUT_RATE, REG_HIDDEN_SIZE
 
 
 class PreEncodedModel(nn.Module):
@@ -8,23 +7,25 @@ class PreEncodedModel(nn.Module):
     Model for pre-encoded text embeddings combined with categorical features.
     It processes categorical features through a hidden layer, combines them with
     the pre-encoded text vectors, and predicts a continuous target variable.
-
-    Args:
-        text_vector_dim: Dimension of the pre-encoded text vectors.
-        categorical_dim: Dimension of the categorical feature input.
-        cat_hidden_size: Number of neurons in the hidden layer for categorical features.
-        reg_hidden_size: Number of neurons in the hidden layer for regression.
-        dropout: Dropout probability for regularization.
     """
 
     def __init__(
         self,
         text_vector_dim: int,
         categorical_dim: int,
-        cat_hidden_size: int = CAT_HIDDEN_SIZE,
-        reg_hidden_size: int = REG_HIDDEN_SIZE,
-        dropout: float = DROPOUT_RATE,
-    ):
+        cat_hidden_size: int = 128,
+        reg_hidden_size: int = 256,
+        dropout: float = 0.3,
+    ) -> None:
+        """
+        Initializes the PreEncodedModel model.
+            Args:
+                text_vector_dim: int, Dimension of the pre-encoded text vectors.
+                categorical_dim: int, Dimension of the categorical features.
+                cat_hidden_size: int, Hidden layer size for categorical features processing, default 128.
+                reg_hidden_size: int, Hidden layer size for regression layers, default 256.
+                dropout: float, Dropout rate for regularization, default 0.3.
+        """
         super(PreEncodedModel, self).__init__()
 
         # Process categorical features
@@ -48,7 +49,15 @@ class PreEncodedModel(nn.Module):
             nn.Linear(reg_hidden_size // 2, 1),
         )
 
-    def forward(self, text_vectors, cat_features):
+    def forward(self, text_vectors, cat_features) -> torch.Tensor:
+        """Defines the forward pass of the model.
+
+        Args:
+            text_vectors: torch.Tensor, Pre-encoded text embeddings.
+            cat_features: torch.Tensor, Categorical features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         # No embedding needed
 
         # Process categorical features

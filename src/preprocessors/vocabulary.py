@@ -1,28 +1,25 @@
 from collections import Counter
-from typing import List, Dict, Optional
+from typing import Optional
 from nltk.tokenize import word_tokenize
 from src.preprocessors.text_preprocessors import clean_tokens
 
 
 def build_vocab(
-    texts: List[str],
+    texts: list[str],
     min_freq: int = 20,
     clean_tokens_use: bool = False,
-    clean_tokens_config: Optional[Dict] = None,
-) -> Dict[str, int]:
+    clean_tokens_config: Optional[dict] = None,
+) -> dict[str, int]:
     """
     Build a vocabulary dictionary mapping tokens to indices.
 
     Args:
-        texts: List of text strings.
-        min_freq: Minimum frequency for a token to be included in the vocab.
-        clean_tokens: Whether to clean tokens using clean_tokens().
-        clean_tokens_config: Dictionary of cleaning parameters to pass to clean_tokens().
-                            Example: {'remove_urls': True, 'remove_numbers': True}
-                            If None, default cleaning is applied.
-
+        texts: list[str], List of text documents.
+        min_freq: int, Minimum frequency for a token to be included in the vocabulary, default is 20.
+        clean_tokens_use: bool, Whether to clean tokens using clean_tokens(), default is False.
+        clean_tokens_config: dict, Dictionary of cleaning parameters to pass to clean_tokens().
     Returns:
-        A dictionary mapping tokens to indices, including <PAD> and <UNK>.
+        dict[str, int], Vocabulary mapping tokens to indices.
     """
     all_tokens = []
 
@@ -68,24 +65,20 @@ def build_vocab(
 
 def text_to_sequence(
     text: str,
-    vocab: Dict[str, int],
-    max_length: int,
+    vocab: dict[str, int],
+    max_length: int = 320,
     clean_tokens_use: bool = False,
-    clean_tokens_config: Optional[Dict] = None,
-) -> List[int]:
+    clean_tokens_config: Optional[dict] = None,
+) -> list[int]:
     """
     Convert a text string to a sequence of token indices based on the provided vocabulary.
-
     Args:
-        text: Input text string
-        vocab: Vocabulary dictionary mapping tokens to indices
-        max_length: Maximum length of the output sequence (for padding/truncating)
-        clean_tokens: Whether to clean tokens using clean_tokens()
-        clean_tokens_config: Dictionary of cleaning parameters to pass to clean_tokens()
-                            Should match the config used in build_vocab()
-
+        text: str, Input text document.
+        vocab: dict[str, int], Vocabulary mapping tokens to indices.
+        max_length: int, Maximum length of the output sequence (for padding/truncation), default is 320.
+        clean_tokens_use: bool, Whether to clean tokens using clean_tokens(), default is False.
+        clean_tokens_config: dict, Dictionary of cleaning parameters to pass to clean_tokens().
     Returns:
-        A list of token indices representing the input text
     """
     # Default cleaning config (should match build_vocab)
     if clean_tokens_config is None and clean_tokens_use:

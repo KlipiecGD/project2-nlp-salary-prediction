@@ -2,31 +2,29 @@ import logging
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from typing import Tuple
-from config.config import RANDOM_SEED, TEST_SIZE, VALID_SIZE
 
 
 def split_data(
     df: pd.DataFrame,
-    test_size: float = TEST_SIZE,
-    valid_size: float = VALID_SIZE,
-    random_state: int = RANDOM_SEED,
+    test_size: float = 0.2,
+    valid_size: float = 0.5,
+    random_state: int = 42,
     log: bool = False,
     logger: logging.Logger = None,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, pd.Series]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, pd.Series]:
     """
     Splits data into training, validation, and test sets.
 
     Args:
-        df: Input dataframe.
-        test_size: Proportion of the dataset to include in the test split.
-        valid_size: Proportion of the temporary split to include in the
-                    validation split.
-        random_state: Seed for reproducible train/test splits.
-        log: Whether to apply log transformation to the target variable.
-        logger: Optional logger for logging information.
+        df: pd.DataFrame, Input dataframe.
+        test_size: float, Proportion of the dataset to include in the test split, default is 0.2.
+        valid_size: float, Proportion of the temporary split to include in the validation split, default is 0.5.
+        random_state: int, Seed for reproducible train/test splits, default is 42.
+        log: bool, Whether to apply log transformation to the target variable, default is False.
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
+    tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, pd.Series]:
         A tuple containing:
         - X_train (pd.DataFrame): Training features.
         - X_valid (pd.DataFrame): Validation features.

@@ -1,9 +1,7 @@
 import numpy as np
 import pandas as pd
 import torch.nn as nn
-from typing import Dict
 import logging
-from config.config import LOSS_FUNCTION
 
 
 def count_parameters(model: nn.Module) -> int:
@@ -14,7 +12,7 @@ def count_parameters(model: nn.Module) -> int:
         model: PyTorch model
 
     Returns:
-        Number of trainable parameters
+        int: Number of trainable parameters
     """
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
@@ -26,27 +24,27 @@ def collect_model_metrics_manual(
     valid_losses_scaled: list,
     train_losses_real: list,
     valid_losses_real: list,
-    test_metrics: Dict,
+    test_metrics: dict,
     elapsed_time: float,
-    loss_fn: str = LOSS_FUNCTION,
-) -> Dict:
+    loss_fn: str = "mse",
+) -> dict:
     """
     Collect metrics from manually trained models (not using train_model function).
     Use this for models trained with custom training loops.
 
     Args:
-        model: Trained PyTorch model
-        model_name: Name/identifier for the model
-        train_losses_scaled: List of training losses (scaled) per epoch
-        valid_losses_scaled: List of validation losses (scaled) per epoch
-        train_losses_real: List of training losses (real scale) per epoch - MSE or MAE
-        valid_losses_real: List of validation losses (real scale) per epoch - MSE or MAE
-        test_metrics: Dictionary with test metrics (e.g., {'Test MSE (scaled)': ..., 'Test MSE (real)': ..., 'Test RMSE (real)': ...})
-        elapsed_time: Training time in seconds
-        loss_fn: Loss function used ('mse' or 'mae')
+        model: nn.Module, Trained PyTorch model
+        model_name: str, Name/identifier for the model
+        train_losses_scaled: list, List of training losses (scaled) per epoch
+        valid_losses_scaled: list, List of validation losses (scaled) per epoch
+        train_losses_real: list, List of training losses (real scale) per epoch - MSE or MAE
+        valid_losses_real: list, List of validation losses (real scale) per epoch - MSE or MAE
+        test_metrics: dict, Dictionary with test metrics (e.g., {'Test MSE (scaled)': ..., 'Test MSE (real)': ..., 'Test RMSE (real)': ...})
+        elapsed_time: float, Training time in seconds
+        loss_fn: str, Loss function used ('mse' or 'mae'), default 'mse'
 
     Returns:
-        Dictionary containing all model information and metrics
+        dict, Dictionary containing all model information and metrics
     """
 
     # Count trainable parameters
@@ -102,25 +100,25 @@ def collect_model_metrics_manual(
 
 def collect_model_metrics(
     model: nn.Module,
-    history: Dict,
+    history: dict,
     elapsed_time: float,
-    test_metrics: Dict,
+    test_metrics: dict,
     model_name: str,
-    loss_fn: str = LOSS_FUNCTION,
-) -> Dict:
+    loss_fn: str = "mse",
+) -> dict:
     """
     Collect all model metrics into a single dictionary.
 
     Args:
-        model: Trained PyTorch model
-        history: History dictionary from train_model function
-        elapsed_time: Training time in seconds from train_model function
-        test_metrics: Test metrics dictionary from evaluate_model function
-        model_name: Name/identifier for the model
-        loss_fn: Loss function used ('mse' or 'mae')
+        model: nn.Module, Trained PyTorch model
+        history: dict, History dictionary from train_model function
+        elapsed_time: float, Training time in seconds from train_model function
+        test_metrics: dict, Test metrics dictionary from evaluate_model function
+        model_name: str, Name/identifier for the model
+        loss_fn: str, Loss function used ('mse' or 'mae')
 
     Returns:
-        Dictionary containing all model information and metrics
+        dict, Dictionary containing all model information and metrics
     """
 
     # Count trainable parameters
@@ -168,15 +166,15 @@ def collect_model_metrics(
     return results
 
 
-def results_to_dataframe(results_dict: Dict):
+def results_to_dataframe(results_dict: dict) -> pd.DataFrame:
     """
     Convert results dictionary to a pandas DataFrame for easy comparison.
 
     Args:
-        results_dict: Dictionary with model results (each value is output from collect_model_metrics)
+        results_dict: dict, Dictionary with model results (each value is output from collect_model_metrics)
 
     Returns:
-        pandas DataFrame with key metrics for each model
+        pd.DataFrame, pandas DataFrame with key metrics for each model
     """
 
     summary_data = []
@@ -211,6 +209,7 @@ def print_model_parameters_summary(
     Prints the parameter count for each named layer and the total sum.
     Args:
         model: The PyTorch model whose parameters are to be summarized.
+        logger: Optional logger instance for output
     """
     total_params = 0
 

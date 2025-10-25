@@ -1,39 +1,39 @@
 import logging
-from typing import Tuple, Dict, Optional
+from typing import Optional
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 from src.datasets.salary_dataset import SalaryDataset
 from src.datasets.multi_input_dataset import MultiInputDataset
-from config.config import BATCH_SIZE, NUM_WORKERS
 
 
 def combine_features(
-    text_embeddings: Dict[str, np.ndarray],
+    text_embeddings: dict[str, np.ndarray],
     categorical_train: np.ndarray,
     categorical_valid: np.ndarray,
     categorical_test: np.ndarray,
     logger: logging.Logger = None,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Optional[int]]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, Optional[int]]:
     """
     Combines text embeddings and categorical features.
 
     Args:
-        text_embeddings: Dictionary with text embeddings.
-        categorical_train: Processed categorical features for training.
-        categorical_valid: Processed categorical features for validation.
-        categorical_test: Processed categorical features for test.
-        multi_input: Whether to track tabular start index for multi-input models.
-        logger: Optional logger for logging information.
+        text_embeddings: dict[str, np.ndarray], Dictionary with text embeddings.
+        categorical_train: np.ndarray, Processed categorical features for training.
+        categorical_valid: np.ndarray, Processed categorical features for validation.
+        categorical_test: np.ndarray, Processed categorical features for test.
+        multi_input: bool, Whether to track tabular start index for multi-input models.
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        Tuple of (X_train, X_valid, X_test, tabular_start_index).
+        tuple[np.ndarray, np.ndarray, np.ndarray, Optional[int]],
+            Tuple of (X_train, X_valid, X_test, tabular_start_index).
     """
     X_train = np.hstack([text_embeddings["X_train_text"], categorical_train])
     X_valid = np.hstack([text_embeddings["X_valid_text"], categorical_valid])
     X_test = np.hstack([text_embeddings["X_test_text"], categorical_test])
 
-    tabular_start_index = categorical_train.shape[1]
+    tabular_start_index = text_embeddings["X_train_text"].shape[1]
 
     if logger:
         logger.info("Features combined successfully.")
@@ -51,23 +51,24 @@ def create_datasets(
     multi_input: bool = False,
     tabular_start_index: Optional[int] = None,
     logger: logging.Logger = None,
-) -> Tuple[Dataset, Dataset, Dataset]:
+) -> tuple[Dataset, Dataset, Dataset]:
     """
     Creates PyTorch datasets.
 
     Args:
-        X_train: Training features.
-        X_valid: Validation features.
-        X_test: Test features.
-        y_train: Training targets.
-        y_valid: Validation targets.
-        y_test: Test targets.
-        multi_input: Whether to create MultiInputDataset or standard SalaryDataset.
-        tabular_start_index: Index where tabular features start in X (required if multi_input is True).
-        logger: Optional logger for logging information.
+        X_train: np.ndarray, Training features.
+        X_valid: np.ndarray, Validation features.
+        X_test: np.ndarray, Test features.
+        y_train: np.ndarray, Training targets.
+        y_valid: np.ndarray, Validation targets.
+        y_test: np.ndarray, Test targets.
+        multi_input: bool, Whether to create MultiInputDataset or standard SalaryDataset, default False.
+        tabular_start_index: Optional[int], Index where tabular features start in X (required if multi_input is True).
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        Tuple of (train_dataset, valid_dataset, test_dataset).
+        tuple[Dataset, Dataset, Dataset]
+            Tuple of (train_dataset, valid_dataset, test_dataset).
     """
     if multi_input:
         train_dataset = MultiInputDataset(
@@ -98,27 +99,28 @@ def create_dataloaders(
     train_dataset: Dataset,
     valid_dataset: Dataset,
     test_dataset: Dataset,
-    batch_size: int = BATCH_SIZE,
-    num_workers: int = NUM_WORKERS,
+    batch_size: int = 64,
+    num_workers: int = 0,
     seed_worker: Optional[callable] = None,
     generator: Optional[torch.Generator] = None,
     logger: logging.Logger = None,
-) -> Tuple[DataLoader, DataLoader, DataLoader]:
+) -> tuple[DataLoader, DataLoader, DataLoader]:
     """
     Creates PyTorch dataloaders.
 
     Args:
-        train_dataset: Training dataset.
-        valid_dataset: Validation dataset.
-        test_dataset: Test dataset.
-        batch_size: Batch size for dataloaders.
-        num_workers: Number of worker processes.
-        seed_worker: Function to seed workers for reproducibility.
-        generator: Random generator for reproducibility.
-        logger: Optional logger for logging information.
+        train_dataset: Dataset, Training dataset.
+        valid_dataset: Dataset, Validation dataset.
+        test_dataset: Dataset, Test dataset.
+        batch_size: int, Batch size for dataloaders, default 64.
+        num_workers: int, Number of worker processes.
+        seed_worker: Optional[callable], Function to seed workers for reproducibility.
+        generator: Optional[torch.Generator], Random generator for reproducibility.
+        logger: Optional[logging.Logger], Optional logger for logging information.
 
     Returns:
-        Tuple of (train_loader, valid_loader, test_loader).
+        tuple[DataLoader, DataLoader, DataLoader]
+            Tuple of (train_loader, valid_loader, test_loader).
     """
     train_loader = DataLoader(
         train_dataset,

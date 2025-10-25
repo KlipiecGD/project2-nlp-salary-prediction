@@ -1,16 +1,14 @@
 import torch
 import torch.nn as nn
-from typing import Dict
 import logging
 import numpy as np
-from config.config import LOSS_FUNCTION
 
 
 def evaluate_model(
     model: nn.Module,
     test_loader: torch.utils.data.DataLoader,
     training_time: float = None,
-    target_scaler=None,
+    target_scaler: object = None,
     device: torch.device = torch.device(
         "mps"
         if torch.backends.mps.is_available()
@@ -18,32 +16,33 @@ def evaluate_model(
         if torch.cuda.is_available()
         else "cpu"
     ),
-    loss_fn: str = LOSS_FUNCTION,
+    loss_fn: str = "mse",
     model_name: str = None,
-    results_dict: Dict = None,
+    results_dict: dict = None,
     log: bool = False,
     multi_input: bool = False,
     logger: logging.Logger = None,
-) -> Dict:
+) -> dict:
     """
     Evaluates a PyTorch regression model and stores results in a dictionary.
     Supports both single-input and multi-input architectures.
 
     Args:
-        model: The trained PyTorch model.
-        test_loader: DataLoader for the test data.
-        target_scaler: The fitted scaler for inverse transforming predictions (None if log=True).
-        device: torch device (mps, cuda or cpu).
-        loss_fn_str: The metric to calculate ('mse' or 'mae').
-        model_name: Name/identifier for the model (optional).
-        results_dict: Dictionary to store results (optional, will update in-place).
-        log: If True, y is log-transformed; real metrics computed using expm1.
-        multi_input: If True, expects (embeddings, tabular, target) batches;
+        model: nn.Module, The trained PyTorch model.
+        test_loader: torch.utils.data.DataLoader, DataLoader for the test data.
+        training_time: float, Training time in seconds (optional).
+        target_scaler: object, The fitted scaler for inverse transforming predictions (None if log=True).
+        device: torch.device, The device to run the model on (mps, cuda or cpu).
+        loss_fn: str, The metric to calculate ('mse' or 'mae'), default 'mse'.
+        model_name: str, Name/identifier for the model (optional).
+        results_dict: dict, Dictionary to store results (optional, will update in-place).
+        log: bool, If True, y is log-transformed; real metrics computed using expm1.
+        multi_input: bool, If True, expects (embeddings, tabular, target) batches;
                      if False, expects (features, target) batches.
         logger: Optional logger for logging information.
 
     Returns:
-        A dictionary containing the calculated metrics.
+        dict, A dictionary containing the calculated metrics.
     """
     model.eval()
 

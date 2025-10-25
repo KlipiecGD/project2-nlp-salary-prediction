@@ -1,37 +1,39 @@
 import torch
 import torch.nn as nn
-from typing import List
-from config.config import DROPOUT_RATE
 
 
 class MultiInputNN(nn.Module):
+    """
+    A neural network designed to handle multiple input types, such as text embeddings and tabular data.
+
+    The network consists of three main components: a sub-network for processing embeddings,
+    a sub-network for processing tabular features, and a combined network that
+    concatenates their outputs to produce a final prediction. Each sub-network
+    uses a sequence of linear layers, batch normalization, ReLU activation, and dropout.
+    """
+
     def __init__(
         self,
         embedding_dim: int,
         tabular_dim: int,
-        embedding_hidden: List[int] = [256, 128],
-        tabular_hidden: List[int] = [64, 32],
-        combined_hidden: List[int] = [128, 64],
-        dropout_prob: float = DROPOUT_RATE,
-    ):
+        embedding_hidden: list[int] = [256, 128],
+        tabular_hidden: list[int] = [64, 32],
+        combined_hidden: list[int] = [128, 64],
+        dropout_prob: float = 0.3,
+    ) -> None:
         """
-        A neural network designed to handle multiple input types, such as text embeddings and tabular data.
-
-        The network consists of three main components: a sub-network for processing embeddings,
-        a sub-network for processing tabular features, and a combined network that
-        concatenates their outputs to produce a final prediction. Each sub-network
-        uses a sequence of linear layers, batch normalization, ReLU activation, and dropout.
+        Initializes the MultiInputNN model.
 
         Args:
-            embedding_dim: The dimension of the input text embeddings.
-            tabular_dim: The number of features in the tabular data.
-            embedding_hidden: A list of integers representing the number of neurons in
+            embedding_dim: int, The dimension of the input text embeddings.
+            tabular_dim: int, The number of features in the tabular data.
+            embedding_hidden: list[int], A list of integers representing the number of neurons in
                               the hidden layers of the embedding sub-network. Defaults to [256, 128].
-            tabular_hidden: A list of integers representing the number of neurons in
+            tabular_hidden: list[int], A list of integers representing the number of neurons in
                             the hidden layers of the tabular sub-network. Defaults to [64, 32].
-            combined_hidden: A list of integers representing the number of neurons in
+            combined_hidden: list[int], A list of integers representing the number of neurons in
                              the hidden layers of the combined network. Defaults to [128, 64].
-            dropout_prob: The dropout probability applied in all dropout layers. Defaults to 0.3.
+            dropout_prob: float, The dropout probability applied in all dropout layers. Defaults to 0.3.
         """
         super(MultiInputNN, self).__init__()
         self.embedding_dim = embedding_dim
@@ -78,6 +80,14 @@ class MultiInputNN(nn.Module):
         self.combined_net = nn.Sequential(*combined_layers)
 
     def forward(self, embeddings: torch.Tensor, tabular: torch.Tensor) -> torch.Tensor:
+        """Defines the forward pass of the model.
+
+        Args:
+            embeddings: torch.Tensor, Input text embeddings.
+            tabular: torch.Tensor, Input tabular features.
+        Returns:
+            torch.Tensor: Predicted continuous target value.
+        """
         embeddings = self.embedding_net(embeddings)
         tabular = self.tabular_net(tabular)
         combined = torch.cat((embeddings, tabular), dim=1)

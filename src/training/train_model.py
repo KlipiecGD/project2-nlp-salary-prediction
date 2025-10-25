@@ -1,22 +1,11 @@
 import time
 import logging
-from typing import Tuple, Optional
+from typing import Optional
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from config.config import (
-    RANDOM_SEED,
-    LOSS_FUNCTION,
-    OPTIMIZER,
-    EPOCHS,
-    LEARNING_RATE,
-    EARLY_STOPPING_PATIENCE,
-    DELTA,
-    SCHEDULER_PATIENCE,
-    SCHEDULER_FACTOR,
-)
 from src.utils.seed_utils import set_seed
 from src.training.early_stopping import EarlyStopping
 
@@ -25,55 +14,58 @@ def train_model(
     model: nn.Module,
     train_loader: DataLoader,
     valid_loader: DataLoader,
-    target_scaler=None,
+    target_scaler: Optional[object] = None,
     device: torch.device = "mps"
     if torch.backends.mps.is_available()
     else "cuda"
     if torch.cuda.is_available()
     else "cpu",
-    n_epochs: int = EPOCHS,
-    lr: float = LEARNING_RATE,
-    loss_fn: str = LOSS_FUNCTION,
-    optimizer_fn: str = OPTIMIZER,
-    patience: int = EARLY_STOPPING_PATIENCE,
-    delta: float = DELTA,
+    n_epochs: int = 20,
+    lr: float = 0.001,
+    loss_fn: str = "mse",
+    optimizer_fn: str = "adam",
+    patience: int = 2,
+    delta: float = 0.001,
     early_stopping=None,
     use_lr_scheduler: bool = False,
-    scheduler_patience: int = SCHEDULER_PATIENCE,
-    scheduler_factor: float = SCHEDULER_FACTOR,
-    seed: Optional[int] = RANDOM_SEED,
+    scheduler_patience: int = 0,
+    scheduler_factor: float = 0.5,
+    seed: Optional[int] = 42,
     log: bool = False,
     multi_input: bool = False,
     logger: logging.Logger = None,
-) -> Tuple[nn.Module, dict, float]:
+) -> tuple[nn.Module, dict, float]:
     """
     Train a PyTorch regression model with early stopping.
     Supports both single-input and multi-input architectures.
 
     Args:
-        model: PyTorch model to train
-        train_loader: DataLoader for training data
-        valid_loader: DataLoader for validation data
-        target_scaler: Fitted scaler for inverse transforming predictions (None if log=True)
-        device: torch device (mps, cuda or cpu)
-        n_epochs: Maximum number of epochs
-        lr: Learning rate
-        loss_fn: Loss function ('mse' for Mean Squared Error, 'mae' for Mean Absolute Error)
-        optimizer_fn: Optimizer function ('adam' or 'sgd')
-        patience: Early stopping patience
-        delta: Minimum change to qualify as improvement
-        early_stopping: EarlyStopping object (if None, creates one)
-        use_lr_scheduler: Whether to use ReduceLROnPlateau scheduler
-        scheduler_patience: Patience for learning rate scheduler
-        scheduler_factor: Factor to reduce learning rate by
-        seed: Random seed for reproducibility (None to skip seeding)
-        log: If True, y is log-transformed; real metrics computed using expm1
-        multi_input: If True, expects (embeddings, tabular, target) batches;
-                     if False, expects (features, target) batches
+        model: nn.Module, PyTorch model to train
+        train_loader: DataLoader, DataLoader for training data
+        valid_loader: DataLoader, DataLoader for validation data
+        target_scaler: Optional[object], Fitted scaler for inverse transforming predictions (None if log=True)
+        device: torch.device, torch device (mps, cuda or cpu)
+        n_epochs: int, Maximum number of epochs
+        lr: float, Learning rate
+        loss_fn: str, Loss function ('mse' for Mean Squared Error, 'mae' for Mean Absolute Error), default 'mse'
+        optimizer_fn: str, Optimizer function ('adam' or 'sgd'), default 'adam'
+        patience: int, Early stopping patience, default 2
+        delta: float, Minimum change to qualify as improvement, default 0.001
+        early_stopping:  EarlyStopping object (if None, creates one)
+        use_lr_scheduler: bool, Whether to use ReduceLROnPlateau scheduler, default False
+        scheduler_patience: int, Patience for learning rate scheduler, default 0
+        scheduler_factor: float, Factor to reduce learning rate by, default 0.5
+        seed: Optional[int], Random seed for reproducibility (None to skip seeding), default 42
+        log: bool, If True, y is log-transformed; real metrics computed using expm1, default False
+        multi_input: bool, If True, expects (embeddings, tabular, target) batches;
+                     if False, expects (features, target) batches, default False
         logger: Optional logger for logging information
 
     Returns:
-        Tuple of (trained_model, history_dict, elapsed_time)
+        tuple[nn.Module, dict, float]
+            - trained_model: The trained PyTorch model
+            - history_dict: Dictionary containing training history
+            - elapsed_time: Total training time in seconds
     """
     # Set seed for reproducibility
     if seed is not None:

@@ -1,6 +1,6 @@
 
 
-# Predicting Salary Project
+# Salary Prediction Project
 
 ## 📘 Overview
 

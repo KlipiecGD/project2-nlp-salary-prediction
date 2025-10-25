@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 import gensim.downloader as api
 import numpy as np
+from nltk.tokenize import word_tokenize
 
 
 def load_pretrained_embeddings(
@@ -43,6 +44,49 @@ def load_pretrained_embeddings(
             f"Loaded {len(model)} words with {model.vector_size}-dimensional vectors"
         )
     return model
+
+def encode_text_pretrained(text: str, model: object, method="mean") -> np.ndarray:
+    """
+    Encode text using pre-trained embeddings.
+
+    Args:
+        text: str, Input text
+        model: object, Pre-trained embedding model (Word2Vec, GloVe, FastText)
+        method: str, Aggregation method ('mean', 'max', 'sum', 'mean+max')
+
+    Returns:
+        np.ndarray, Fixed-size vector representing the text
+    """
+    tokens = word_tokenize(text.lower())
+
+    # Get vectors for tokens in vocabulary
+    vectors = []
+    for token in tokens:
+        try:
+            vectors.append(model[token])
+        except KeyError:
+            # Token not in vocabulary - skip it
+            continue
+
+    if not vectors:
+        if method == "mean+max":
+            return np.zeros(2 * model.vector_size)
+        return np.zeros(model.vector_size)
+
+    vectors = np.array(vectors)
+
+    if method == "mean":
+        return np.mean(vectors, axis=0)
+    elif method == "max":
+        return np.max(vectors, axis=0)
+    elif method == "mean+max":
+        mean_vec = np.mean(vectors, axis=0)
+        max_vec = np.max(vectors, axis=0)
+        return np.concatenate([mean_vec, max_vec])  # Double the size
+    elif method == "sum":
+        return np.sum(vectors, axis=0)
+    else:
+        return np.mean(vectors, axis=0)
 
 
 def create_embedding_matrix_from_pretrained(

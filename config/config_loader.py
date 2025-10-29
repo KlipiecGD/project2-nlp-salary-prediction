@@ -179,8 +179,8 @@ def get_config(config_path: Optional[str] = None, reload: bool = False) -> Confi
     Get or create the configuration singleton.
     
     Args:
-        config_path: Path to config file. If None, uses default path or ENV variable
-        reload: Force reload of configuration
+        config_path: Optional[str], Path to config file. If None, uses default path or ENV variable
+        reload: bool, Force reload of configuration, default is False
         
     Returns:
         Validated Config instance

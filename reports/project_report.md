@@ -299,7 +299,8 @@ For Word2Vec I experimented with 3 different approaches:
 - Training RMSE: 9004.66
 - Validation RMSE: 9321.83	
 - Test RMSE: 9075.20
-- Loss Curve: ![alt text](figures/curves_word2vec_embeddings_input.png)
+- Loss Curve: 
+- ![alt text](figures/curves_word2vec_embeddings_input.png)
 
 **Word2Vec with frozen embedding layer information - Model 2:**
 - Architecture: `EmbeddingMatrixNN` with frozen embeddings

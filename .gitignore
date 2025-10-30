@@ -25,9 +25,7 @@ tfidf_features/
 .idea/
 
 # Other
-*.png
 *.jpg
-*.jpeg
 *.gif
 *.svg
 .ruff_cache/

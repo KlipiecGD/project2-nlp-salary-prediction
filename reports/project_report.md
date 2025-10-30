@@ -150,19 +150,19 @@ I also tried to pass TF-IDF text features through separate input branch in multi
 After these experiments I performed hyperparameter tuning and other techniques for TF-IDF using `IntegratedNN` architecture. Below you can find tried approaches and loss curves for each of them
 
 - filling missing values with most frequent value instead of `'unknown'` - TfIdfModelv5
-![alt text](figures/curves_tfidf_mostfrequent.png)
+- ![alt text](figures/curves_tfidf_mostfrequent.png)
 - Simpler model with smaller hidden size - `SimpleRegressorWithNormalization` with `[64, 32]` neurons - TfIdfModelv6
-![alt text](figures/curves_tfidf_simple.png)
+- ![alt text](figures/curves_tfidf_simple.png)
 - `IntegratedNN` with less neurons - TfIdfModelv7
-![alt text](figures/curves_tfidf_integrated_small.png)
+- ![alt text](figures/curves_tfidf_integrated_small.png)
 - Using learning rate scheduler - TfIdfModelv8
-![alt text](figures/curves_tfidf_scheduler.png)
+- ![alt text](figures/curves_tfidf_scheduler.png)
 - Using `SGD` optimizer - TfIdfModelv9
-![alt text](figures/curves_tfidf_sgd.png)
+- ![alt text](figures/curves_tfidf_sgd.png)
 - Adding SVD for dimensionality reduction - TfIdfModelv10
-![alt text](figures/curves_tfidf_svd.png)
+- ![alt text](figures/curves_tfidf_svd.png)
 - Removing stop words in text features - TfIdfModelv11
-![alt text](figures/curves_tfidf_stopwords.png)
+- ![alt text](figures/curves_tfidf_stopwords.png)
 
 As an additional experiment I also trained TF-IDF models for predicting log of the salary instead scaling target using approach and architecture from TfIdfModelv11 - TfIdfModelLog.
 The loss curves for these experiments are shown below:

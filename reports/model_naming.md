@@ -7,7 +7,7 @@ This convention is designed to systematically encode all critical hyperparameter
 This structure is used when the model is trained *without* any text features.
 
 **Format:**
-$$\text{cat}\_\text{(MVI)}\_\text{bs}\text{(B)}\_\text{(Opt)}\_\text{(LRS)}\_\text{hid}\text{(H)}\_\text{dr}\text{(D)}$$
+`cat_(MVI)_bs(B)_(Opt)_(LRS)_hid(H)_dr(D)`
 
 | Position | Code | Description | Options |
 | :--- | :--- | :--- | :--- |
@@ -31,7 +31,8 @@ This structure is used when the model includes text features, which are processe
 
 
 **Format:**
-$$\text{(TextPrep)}\_\text{(ModelType)}\_\text{(MVI)}\_\text{bs}\text{(B)}\_\text{(Opt)}\_\text{(LRS)}\_\text{hid}\text{(H)}\_\text{dr}\text{(D)}\_\text{(Optional)}$$
+
+`(TextPrep)_(ModelType)_(MVI)_bs(B)_(Opt)_(LRS)_hid(H)_dr(D)_(Optional)`
 
 | Position | Code | Description | Options |
 | :--- | :--- | :--- | :--- |
@@ -58,7 +59,7 @@ $$\text{(TextPrep)}\_\text{(ModelType)}\_\text{(MVI)}\_\text{bs}\text{(B)}\_\tex
 - **Learning rate:** By default 0.001, if other then information at the end of name of the model is provided
 
 **Format:**
-$$\text{emb}\_\text{(EmbSize)}\_\text{mlen}\text{(MaxLen)}\_\text{mf}\text{(MinFreq)}\_\text{(Arch)}\_\text{(EmbMode)}\_\text{chid}\text{(CH)}\_\text{rhid}\text{(RH)}\_\text{dr}\text{(D)}$$
+`emb_(EmbSize)_mlen(MaxLen)_mf(MinFreq)_(Arch)_(EmbMode)_chid(CH)_rhid(RH)_dr(D)`
 
 | Position | Code | Description | Options |
 |:---------|:-----|:------------|:--------|
